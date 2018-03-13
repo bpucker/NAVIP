@@ -1,3 +1,7 @@
+__author__  = "Jan-Simon Baasner"
+__email__   = "janbaas@cebitec.uni-bielefeld.de"
+
+
 from enum import Enum, unique
 
 class Variant:

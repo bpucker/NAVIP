@@ -1,5 +1,8 @@
+__author__  = "Jan-Simon Baasner"
+__email__   = "janbaas@cebitec.uni-bielefeld.de"
+
 import sys
-import VCF_preprocess,Coordinator, sfa
+import VCF_preprocess,Coordinator, sfa, VCF_Format_Check
 ###
 example_pre = "\"python3 navip.py --mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/data/20160806_small_variants.vcf" \
               " --outpath /prj/gf-arabseq/project_VariantAnnotation/data/VCF_Preprocessing/\""
@@ -15,7 +18,8 @@ example_sfa = "\"python3 navip.py --mode sfa --innavipvcf /prj/gf-arabseq/projec
 
 readmetext = "NAVIP has three existing modules: VCF preprocessing, the NAVIP main program and one simple first analysis of the created data.\n" \
              "You can choose the module with \"--mode <module>\".\n" \
-             "The module shortcuts are \"pre\",\"main\" and \"sfa\".\n\n" \
+             "The module shortcuts are \"pre\",\"main\" and \"sfa\" and there is a vcf-format-check \"vcfc\".\n\n" \
+             "For the VCF-Check: \"--mode vcfc --invcf <path_with_file>\"\n\n"\
              "VCF preprocessing needs two more arguments:" \
              "\n \"--invcf <path_with_file>\" and \"--outpath <path_to_folder>\" \n" \
              "Please be aware, that no new folder will be created." \
@@ -63,6 +67,9 @@ readmetext = "NAVIP has three existing modules: VCF preprocessing, the NAVIP mai
 
 if __name__ == '__main__':
 
+    teststatement = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/first.vcf --ingff /grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/CRIBI_V2.1_extended_20161128.gff3 --infasta /grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/"
+    sys.argv = teststatement.split(" ")
+
     if "--mode" in sys.argv:
         args = sys.argv
         if args[args.index("--mode")+1] == "pre" \
@@ -93,6 +100,9 @@ if __name__ == '__main__':
             sfa.sfa_main(args[args.index("--innavipvcf") + 1],
                         args[args.index("--innavipfasta") + 1],
                         args[args.index("--outpath") + 1])
+        elif args[args.index("--mode")+1] == "vcfc" \
+                and "--invcf" in args:
+            VCF_Format_Check.VCF_Check(str(args[args.index("--invcf") + 1]))
 
         else:
             print("Arguments are invalid."

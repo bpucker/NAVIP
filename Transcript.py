@@ -1,3 +1,7 @@
+__author__  = "Jan-Simon Baasner"
+__email__   = "janbaas@cebitec.uni-bielefeld.de"
+
+
 from enum import Enum, unique
 from VCF_Variant import Variant,VariantEnum
 from Gff3_Handler import GFF3_Handler
@@ -274,6 +278,12 @@ class Transcript:
 		# list needs to be ordered after position, so the new cds position can be calculated.
 		# because every variants cds position can be changed with previous indels.
 		for vinfo in IntegratedVariantObjects:
+			if self.TID == "AT1G53705.1":
+				asdasdasd = len(self.IV_Changed_DNA_CDS_Seq)
+				print("bugsearch 20051204, 'AT1G53705.1'")
+			if self.TID == "VIT_218s0001g03710.1":
+				print("bugsearch VIT_218s0001g03710.1")
+
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
 				alt = vinfo.Alt
 				ref = vinfo.Ref
@@ -296,6 +306,11 @@ class Transcript:
 					first = self.IV_Changed_DNA_CDS_Seq[0:firstkoord]
 				else:
 					first = ""
+
+				print(str(self.TID) + "\t" + str(vinfo.ChrPosition))
+				if self.TID == "VIT_218s0001g03710.1":
+					print("bugsearch VIT_218s0001g03710.1")
+
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
 				if test != ref:
 					print("Error 1: SUB not identical with Ref: " + str(self.TID) + " " + str(vinfo.ChrPosition))
@@ -310,12 +325,13 @@ class Transcript:
 				dellength = (len(ref)-1)
 
 				if self.ForwardDirection == TranscriptEnum.REVERSE:
-					if cds_position + current_additional_position - dellength <= 3 \
-							and cds_position + current_additional_position - dellength  > 0:
+					asdasdasdasdasdasdasd = cds_position + current_additional_position + dellength
+					if cds_position + current_additional_position + dellength <= 3 \
+							and cds_position + current_additional_position + dellength  > 0:
 						first = self.IV_Changed_DNA_CDS_Seq[0:cds_position + current_additional_position -1 ]
 						print("Note 1: DEL removed start: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
 						vinfo.Classification.append(TranscriptEnum.START_LOST)
-					elif cds_position + current_additional_position - dellength <= 0:
+					elif cds_position + current_additional_position + dellength <= 0:
 						print("Note 1.1: DEL destroyed start exon: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
 						vinfo.Classification.append(TranscriptEnum.CDS_START_INVOLVED)
 						first = ""
@@ -864,6 +880,12 @@ class Transcript:
 			#	B1-> Start: Last-Exon; End: After-Last Exon -> Stop destroyed
 			#	B2-> Start: In one Exon; End: In one Intron -> Spliceside destroyed
 			###
+			# While bughunting, new cases appeared:
+			#  -> before transcript starts into intron -> Start + a lot more lost
+			#  -> starts inside intron, into next intron -> exon or more lost + Spliceside(s) destroyed
+			#  -> starts inside intron, ends after stop -> Stop destroyed + more
+			#  -> starts inside exon, ends in next exon -> intron lost + Spliceside(s) destroyed
+
 			second_position = vinfo.ChrPosition + (len(vinfo.Ref) -1)
 			cds_2 = self.SearchPositionInCDS(second_position)
 
@@ -890,6 +912,8 @@ class Transcript:
 					vinfo.Classification.append(TranscriptEnum.CDS_EXON_TO_INTRON)
 			else:
 				print ("Error - IV_CDS_Damaging_Variant_Handler?,Forward: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
+
+
 		else:
 			normal_cds = self.SearchPositionInCDSReverse(vinfo.ChrPosition)
 			###
@@ -957,6 +981,8 @@ class Transcript:
 				cds_2 = self.SearchPositionInCDS(variant.Position + len(variant.Reference) - 1)
 
 		else: # self.ForwardDirection == TranscriptEnum.REVERSE:
+			if variant.Position == 20050478:
+				print("bugtest 20050478")
 			CDS_Position = self.SearchPositionInCDSReverse(variant.Position)
 			if len(variant.Reference) > 1:  # DEL
 				CDS_Position = self.SearchPositionInCDSReverse(variant.Position + (len(variant.Reference) - 1))
@@ -1011,7 +1037,6 @@ class Transcript:
 					self.TID = str(self.TID) + "A"
 				else:
 					print("Maybe bug in :Remove_Mult_Allel_Entry_In_All_Variant_Information with :" +self.TID)
-
 
 	def addCDS(self, StartPosition: int, EndPosition: int, Raster: str):
 		"""
@@ -1216,7 +1241,6 @@ class Transcript:
 			return self.SeqInCDS_OverCDS_Position(StartPosCDS, EndPosCDS)
 		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			return self.SeqInRevCDS_OverCDS_Position(StartPosCDS, EndPosCDS)
-
 
 	def SeqInIV_Changed_DNA_CDS_Seq(self, StartPosNewCDS:int, EndPosNewCDS:int) -> str:
 		"""

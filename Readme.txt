@@ -1,6 +1,8 @@
 NAVIP has three existing modules: VCF preprocessing, the NAVIP main program and one simple first analysis of the created data.
 You can choose the module with "--mode <module>".
-The module shortcuts are "pre","main" and "sfa".
+The module shortcuts are "pre","main" and "sfa" and there is a vcf-format-check "vcfc".
+
+For the VCF-Check: "--mode vcfc --invcf <path_with_file>"
 
 VCF preprocessing needs two more arguments:
  "--invcf <path_with_file>" and "--outpath <path_to_folder>" 

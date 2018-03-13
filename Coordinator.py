@@ -1,3 +1,7 @@
+__author__  = "Jan-Simon Baasner"
+__email__   = "janbaas@cebitec.uni-bielefeld.de"
+
+
 import copy #to copy objects
 from GenomHandler import GenomHandler, Fasta_Enum
 from VCF_Handler import VCF_HANDLER
@@ -500,8 +504,10 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					   "Shared_EffKey(s)|"
 					   "REF_Codon(s);Variant_Position_in_Codon|"
 					   "REF_AA|"
+					   "old_CDS_Position|"
 					   "ALT_Codon(s);Variant_Position_in_Codon|"
 					   "ALT_AA|"
+					   "new_CDS_Position|"
 					   "NAVIP_END|"
 					   "<old info field>\n")
 		vcf_file.write("#If there are no shared effect keys, the value is:\"NONE\".\n")
@@ -600,6 +606,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						NAVIP_INFO_LIST.append(str(vinfo.OrigTriplets) + ";" + str(vinfo.OrigRaster) + "|")
 					if Ref_AA:
 						NAVIP_INFO_LIST.append(str(vinfo.OrigAmino) + "|")
+					NAVIP_INFO_LIST.append(str(vinfo.Unchanged_CDS_Position) + "|")
 					if Alt_Codons:
 						NAVIP_INFO_LIST.append(str(vinfo.ChangedTriplets) + ";" + str(vinfo.Changed_Raster) + "|")
 					if Alt_AA:

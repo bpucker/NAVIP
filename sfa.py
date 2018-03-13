@@ -1,3 +1,7 @@
+__author__  = "Jan-Simon Baasner"
+__email__   = "janbaas@cebitec.uni-bielefeld.de"
+
+
 import matplotlib.pyplot as plt
 from datetime import datetime
 
@@ -52,6 +56,9 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         """
         #0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         #Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
         dictdict = {}
         vcf_file = open(path_with_vcf_file, "r")
         line = vcf_file.readline()
@@ -73,8 +80,13 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         :param genedict: Dictionary containing all variants per transcript.
         :return: Dictionary, containing all DVC.
         """
+        # old
         # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # new why why why no enums for indexes, i should have known better
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
         sortme = []
         for gene in genedict:
             sortme.append(gene)
@@ -85,7 +97,7 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
                 line = genedict[sortetgene][pos]
                 if len(line.split("\t")[3]) > 1 or len(line.split("\t")[4]) > 1:
                     continue
-                cds = int(line.split("\t")[7].split("|")[8])
+                cds = int(line.split("\t")[7].split("|")[9])
                 chr = str(line.split("\t")[0])
                 pos = str(line.split("\t")[1])
                 for shared_id in line.split("\t")[7].split("|")[3].split(","):
@@ -93,7 +105,7 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
                     shared_line = genedict[sortetgene][shared_id]
                     if len(shared_line.split("\t")[3]) > 1 or len(shared_line.split("\t")[4]) > 1:
                         continue
-                    elif abs(int(shared_line.split("\t")[7].split("|")[8]) - cds) == 2:
+                    elif abs(int(shared_line.split("\t")[7].split("|")[9]) - cds) == 2:
                         if chr +"_"+ pos +"_"+ str(shared_line.split("\t")[0]) in all_sdcv:
                             continue
                         elif chr +"_"+ str(shared_line.split("\t")[0]) +"_"+ pos in all_sdcv:
@@ -131,6 +143,9 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         """
         # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
         sortme = []
         for gene in genedict:
             sortme.append(gene)
@@ -213,9 +228,11 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
             for a2 in AA:
                 AAC_Table[a1, a2] = 0
 
+            # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+            # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
         while line:
             orig_aa = line.split("\t")[7].split("|")[5]
-            new__aa = line.split("\t")[7].split("|")[7]
+            new__aa = line.split("\t")[7].split("|")[8]
             if (orig_aa, new__aa) in AAC_Table:
                 AAC_Table[orig_aa, new__aa] += 1
             else:
@@ -303,14 +320,18 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         for i,line in enumerate(lines):
             # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
             # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+            # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+            # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
+
             if i == len(lines)-1:
                 continue
             oaa1 = line.split("\t")[7].split("|")[5]
-            naa1 = line.split("\t")[7].split("|")[7]
+            naa1 = line.split("\t")[7].split("|")[8]
             tid1 = line.split("\t")[7].split("|")[0]
 
             oaa2 = lines[i+1].split("\t")[7].split("|")[5]
-            naa2 = lines[i+1].split("\t")[7].split("|")[7]
+            naa2 = lines[i+1].split("\t")[7].split("|")[8]
             tid2 = lines[i+1].split("\t")[7].split("|")[0]
 
             if tid1 != tid2:
@@ -641,6 +662,10 @@ def count_stuff_unique(path_to_neutralized_indels:str, no_none_vcf:str, outpath:
         uniques = []
         # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
+
         while line:
             splitedline = line.split("\t")
             if str(splitedline[0]) +"_"+ str(splitedline[1]) +"_"+str(splitedline[7].split("|")[0].split(".")[0]) not in uniques:
@@ -859,10 +884,10 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
 
     time = datetime.now()
     print("##################################################################################")
-    print("VCF work start.")
+    print("VCF work starting.")
     vcf_stuff()
     print("VCF work is done:" + str(datetime.now() - time))
-    print("AA work start.")
+    print("AA work starting.")
     aa_len_stuff ()
     print("AA work is done:" + str(datetime.now() - time))
     print("plots starting")
