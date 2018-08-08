@@ -3,10 +3,11 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 
 from datetime import datetime
+import LogOrganizer
 import sys
 
 
-def VCF_Check(vcf_path_amd_file: str):
+def VCF_Check(vcf_path_amd_file: str, outpath:str):
 	print ("Checking for compatibily.")
 	time = datetime.now()
 	compatible = True
@@ -73,11 +74,13 @@ def VCF_Check(vcf_path_amd_file: str):
 			continue
 		if intlist[i-1][1] > pos:
 			if intlist[i - 1][0] == chr:
-				print("Position: " + str(intlist[i-1]) + " has to be after position: " + str(intlist[i]))
+				logdata = "Position: " + str(intlist[i-1]) + " has to be after position: " + str(intlist[i]) + "\n"
+				LogOrganizer.LogOrganizer.addToLog(LogOrganizer.LogEnums.VCF_Format_Check_log, logdata)
 				compatible = False
 		if intlist[i-1][1] == pos:
 			if intlist[i-1][0] == chr:
-				print("There is more than one entry in: " + str(pos) + " the program still works, but will only consider one entry.")
+				logdata = "There is more than one entry in: " + str(pos) + " the program still (probably) works, but will only consider one entry.\n"
+				LogOrganizer.LogOrganizer.addToLog(LogOrganizer.LogEnums.VCF_Format_Check_log, logdata)
 				compatible = False
 
 
@@ -88,5 +91,9 @@ def VCF_Check(vcf_path_amd_file: str):
 	else:
 		print("Looks like it is incompatible.")
 	vcf.close()
+	LogOrganizer.LogOrganizer.writeLog(LogOrganizer.LogEnums.VCF_Format_Check_log, outpath)
+
+
+
 
 

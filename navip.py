@@ -118,8 +118,9 @@ if __name__ == '__main__':
                         args[args.index("--innavipfasta") + 1],
                         args[args.index("--outpath") + 1])
         elif args[args.index("--mode")+1] == "vcfc" \
-                and "--invcf" in args:
-            VCF_Format_Check.VCF_Check(str(args[args.index("--invcf") + 1]))
+                and "--invcf" in args\
+                and "--outpath" in args:
+            VCF_Format_Check.VCF_Check(str(args[args.index("--invcf") + 1]),str(args[args.index("--outpath") + 1]))
 
         else:
             print("Arguments are invalid."
