@@ -2,7 +2,12 @@ __author__  = "Jan-Simon Baasner"
 __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 import sys
-import VCF_preprocess,Coordinator, sfa, VCF_Format_Check
+import VCF_preprocess,Coordinator, VCF_Format_Check
+try:
+    import sfa
+except ModuleNotFoundError:
+    print("ModuleNotFoundError")
+    print(str(sys.exc_info()[0]))
 
 example_pre = "\"python3 navip.py --mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/data/20160806_small_variants.vcf" \
               " --outpath /prj/gf-arabseq/project_VariantAnnotation/data/VCF_Preprocessing/\""

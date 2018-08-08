@@ -821,7 +821,7 @@ class Transcript:
 		###
 		for vinfo in self.IntegratedVariantObjects_NotCDS:
 			vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
-			if self.SearchPositionInCDS(vinfo.ChrPosition) == -1:
+			if self.SearchPositionInCDS(vinfo.ChrPosition) == TranscriptEnum.POSITION_NOT_IN_CDS:
 				continue
 			else:
 				variant = Variant("not needed here",
