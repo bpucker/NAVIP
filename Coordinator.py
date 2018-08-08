@@ -1017,39 +1017,6 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	firstxChr = 0
 	timeStart = datetime.now()
 
-	"""
-	This comment block contains a variety of used data.
-	I will remain for further study or usage in the future and as a sort of documentation.
-	###############~VCF-File-Path~########################
-	#### OLD_VCF_DATA_PATH - arabseq ND zu COL
-	# vcf_path_and_name = "/prj/gf-arabseq/project_VariantAnnotation/data/20160806_small_variants.vcf"
-	### SnpEff_handled File - arabseq ND zu COL
-	# vcf_path_and_name = "/prj/gf-arabseq/project_VariantAnnotation/data/20160806_SnpEff_results.vcf"
-	### vitis
-	# vcf_path_and_name = "/prj/gf-arabseq/project_VariantAnnotation/data/vitis/GF_RNA_seq_variants.vcf"
-
-	###############~GFF3-File-Path~########################
-	###Araport 11 Daten
-	# gff3_path_and_name = "/prj/gf-arabseq/data/Araport11_official_release/Araport11_GFF3_genes_transposons.201606.gff"
-	###ND1 Daten
-	# gff3_path_and_name = "/prj/gf-arabseq/project_Ath-Nd1/members/bpucker/20170429_final_gene_prediction/20170429_Nd1_pseudochromosomes.gff3"
-	### vitis
-	# gff3_path_and_name ="/prj/gf-arabseq/project_VariantAnnotation/data/vitis/CRIBI_V2.1_extended_20161128.gff3"
-	# gff3_path_and_name = "/prj/gf-arabseq/project_VariantAnnotation/data/VITIS_CRIBI_V2.1_extended_20161128_sortiert.gff3"
-
-	###############~FASTA-File-Path~########################
-	# Tari 10 Referenz-Genome
-	# fasta_FILE_PATH = "/prj/gf-arabseq/data/TAIR10/TAIR10.fa"
-	# ND1 Ref.-Genome
-	# fasta_FILE_PATH = "/prj/gf-arabseq/project_Ath-Nd1/results/PacBioAssembly/20161212_Nd1_pseudochromosomes.fasta"
-	### vitis Reference Genome
-	# fasta_FILE_PATH = "/prj/gf-arabseq/project_VariantAnnotation/data/vitis/Vv12x_CRIBI.fa"
-	#######################################
-	# Output_Data_Path = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/"
-	#######################################
-	#######################################
-	"""
-
 
 	vcf_path_and_name = invcf
 	gff3_path_and_name = ingff

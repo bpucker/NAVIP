@@ -3,7 +3,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 import sys
 import VCF_preprocess,Coordinator, sfa, VCF_Format_Check
-###
+
 example_pre = "\"python3 navip.py --mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/data/20160806_small_variants.vcf" \
               " --outpath /prj/gf-arabseq/project_VariantAnnotation/data/VCF_Preprocessing/\""
 
@@ -73,10 +73,10 @@ if __name__ == '__main__':
     #for jens with possible bugs inside
     #jenstest = "--mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/Seyval_variants.vcf " \
     #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/"
-    jenstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf " \
-               "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 " \
-               "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa " \
-               "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch/"
+    #jenstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf " \
+    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 " \
+    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa " \
+    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch/"
     #test = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakeVCFdata.vcf " \
     #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegff.gff " \
     #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegenomdata.fa " \
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     #           "--innavipfasta /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/all_transcripts_data.fa " \
     #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/sfa/"
 
-    sys.argv = jenstest.split(" ")
+    #sys.argv = jenstest.split(" ")
 
     if "--mode" in sys.argv:
         args = sys.argv

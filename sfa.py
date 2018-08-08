@@ -201,7 +201,6 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         for listi in indel_neutralize_dict:
             for line in indel_neutralize_dict[listi]:
                 outie.append(line)
-            # sortme.append(uniquq_sdcv_dict[tuple][1])
         outie = sorted(outie, key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
         indel_vcf = open(path,"w")
         indel_vcf.write("".join(outie))
@@ -248,7 +247,7 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         Writes the AAC table into a text file.
         :param aac_dict: Dictionary, containing from which original AA to which new AA the variants mutate.
         :param AAC_out_path: Path and file name for the output.
-        :return: NOthing.
+        :return: Nothing.
         """
         sortme = []
         AA = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V", "*"]
@@ -365,11 +364,6 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
             first_tid_dict[key] = entry[3]
         return first_tid_dict
 
-    #old_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/2017-10-17 17:17:56.641179_All_VCF_.vcf"
-    #new_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/no_NONE.vcf"
-    #sdvc_vcf= "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/dcv.vcf"
-    #InDel_vcf="/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/indel_neutralize.vcf"
-
     #create a vcf file only with vcf with shared ids -> only variants with shared effects
     no_NONE(old_vcf,new_vcf)
 
@@ -453,7 +447,6 @@ def main_for_compare_AA_length(navip_fasta_file:str, aa_len_dif_txt:str):
                 else:
                     tid_type_dict[tid, type] = first_stop = line.find("*")
                 line = my_fasta_file.readline()
-                # print (line)
         tid_list = sorted(tid_list)
         #sortme = sorted(sortme, key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
 
@@ -807,28 +800,22 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         """
 
         # my output vcf (NAVIP)
-        #old_navip_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/2017-10-17 17:17:56.641179_All_VCF_.vcf"
         old_navip_vcf = innavipvcf
 
         # for output of only variants with shared effects
-        # new_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/no_NONE.vcf"
         new_vcf = outpath + "no_NONE.vcf"
 
         # DVC will be sorted after the first TID with a Double-Variant-inside-one-Codon-effect
         # including unsync DVC
-        # sdvc_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/dvc.vcf"
         sdvc_vcf = outpath + "dvc.vcf"
 
         # all indels, which neutralize their effects (+2 -1 -1 == 0)
-        # InDel_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/indel_neutralize.vcf"
         InDel_vcf = outpath + "indel_neutralize.vcf"
 
         # table for AAC overview
-        # AAC_out_path = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/AAC_Tab.txt"
         AAC_out_path = outpath + "AAC_Tab.txt"
 
         # DVC wihtout same origin tripplet (due to frameshifts)
-        # unsync_dvc_out = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/dvc_unsync.vcf"
         unsync_dvc_out = outpath + "dvc_unsync.vcf"
 
         #does all the funny stuff for the 5 output files
@@ -844,11 +831,9 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         #name and path to the new datafile
         # > len_dif counted_length
         # all tids, max 10 per row, many rows
-        #aa_len_dif = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/AA_length_dif.txt"
         aa_len_dif = outpath + "AA_length_dif.txt"
 
         #from NAVIP created fasta file with 4x cds from every ttransctipt (original and new DNA/AA)
-        #navip_fasta_file = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/2017-10-09 16:32:31.872025_all_transcripts_data.fa"
         navip_fasta_file = innavipfasta
 
         # organize the stuff for comparing length of AA)
@@ -860,7 +845,6 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         :return: Nothing.
         """
 
-        # aa_len_dif = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/AA_length_dif.txt"
         aa_len_dif = outpath + "AA_length_dif.txt"
 
         plots(aa_len_dif,outpath)
@@ -872,11 +856,9 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         """
 
         # all indels, which neutralize their effects (+2 -1 -1 == 0)
-        # InDel_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/indel_neutralize.vcf"
         InDel_vcf = outpath + "indel_neutralize.vcf"
 
         # for output of only variants with shared effects
-        # new_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/no_NONE.vcf"
         no_none_vcf = outpath + "no_NONE.vcf"
 
         count_stuff_unique(InDel_vcf, no_none_vcf, outpath)

@@ -12,7 +12,6 @@ def VCF_Check(vcf_path_amd_file: str, outpath:str):
 	time = datetime.now()
 	compatible = True
 
-	#/prj/gf-arabseq/project_VariantAnnotation/data/20160806_small_variants.vcf
 	vcf = open(vcf_path_amd_file, "r")
 	line = vcf.readline()
 
