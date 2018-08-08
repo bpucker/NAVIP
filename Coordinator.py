@@ -7,7 +7,7 @@ from GenomHandler import GenomHandler, Fasta_Enum
 from VCF_Handler import VCF_HANDLER
 from VCF_Variant import Variant, VariantEnum
 from Transcript import Transcript, TranscriptEnum, For_Type_Safety_and_statics
-from Gff3_Handler import GFF3_Handler
+from Gff3_Handler import GFF3_Handler_V3
 from datetime import datetime
 
 
@@ -29,12 +29,12 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		:return: Nothing.
 		"""
 
-		def Write_New_Special_VCF_File(data_path: str, gff3: GFF3_Handler):
+		def Write_New_Special_VCF_File(data_path: str, gff3: GFF3_Handler_V3):
 			# chrom	Pos	ID	Ref	Alt Info
 			vcf_file = open(data_path + "Special_VCF_" + str(datetime.now()) + ".vcf", "w")
 			vcf_file.write("#Chrom\tPos\tID\tRef\tAlt\tInfo\n")
 			for name in gff3.GetChromosomeNames():
-				for transcriptHier in gff3.GetChrTranscripts(name).values():
+				for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 					transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
 					if not transcriptHier.CDS_Exist or transcriptHier.Transcript_CDS_damaged:
 						continue
@@ -151,11 +151,11 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						markedSecond = False
 			vcf_file.close()
 
-		def Write_VCF_With_Key(data_path: str, gff3: GFF3_Handler):
+		def Write_VCF_With_Key(data_path: str, gff3: GFF3_Handler_V3):
 			vcf_file = open(data_path + "Special_VCF_" + str(datetime.now()) + ".vcf", "w")
 			vcf_file.write("#Chrom\tPos\tID\tRef\tAlt\tInfo\n")
 			for name in gff3.GetChromosomeNames():
-				for transcriptHier in gff3.GetChrTranscripts(name).values():
+				for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 					transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
 					if not transcriptHier.CDS_Exist or transcriptHier.Transcript_CDS_damaged:
 						continue
@@ -203,12 +203,12 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 									   + str(vinfo.Changed_Raster) + "\n")
 			vcf_file.close()
 
-		def Write_All_VCF_Stop_Lost(data_path: str, gff3: GFF3_Handler):
+		def Write_All_VCF_Stop_Lost(data_path: str, gff3: GFF3_Handler_V3):
 			vcf_file = open(data_path + "Special_VCF_Stop_Lost" + str(datetime.now()) + ".vcf", "w")
 			vcf_file.write("#Chrom\tPos\tID\tRef\tAlt\tInfo\n")
 			for name in gff3.GetChromosomeNames():
 				vcf_file.write(str(name) + "\n")
-				for transcriptHier in gff3.GetChrTranscripts(name).values():
+				for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 					transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
 					if not transcriptHier.CDS_Exist or transcriptHier.Transcript_CDS_damaged:
 						continue
@@ -272,7 +272,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 									   + str(vinfo.Changed_Raster) + "\n")
 			vcf_file.close()
 
-		def Write_All_VCF_NO_STOP(data_path: str, gff3: GFF3_Handler):
+		def Write_All_VCF_NO_STOP(data_path: str, gff3: GFF3_Handler_V3):
 			vcf_file = open(data_path + "Special_VCF_NO_STOP" + str(datetime.now()) + ".vcf", "w")
 			# vcf_file.write("#Chrom\tPos\tID\tRef\tAlt\tInfo\n")
 			vcf_file.write("#Transcripts completely without STOP\n")
@@ -283,7 +283,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 							   + "\t" + "RNA_END"
 							   + "\t" + "Gene_Start"
 							   + "\t" + "Gene_End" + "\n")
-				for transcriptHier in gff3.GetChrTranscripts(name).values():
+				for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 					transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
 					if not transcriptHier.CDS_Exist:  # or transcriptHier.Transcript_CDS_damaged:
 						continue
@@ -335,7 +335,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 
 			vcf_file.close()
 
-		def Write_All_VCF_To_Many_Stops(data_path: str, gff3: GFF3_Handler):
+		def Write_All_VCF_To_Many_Stops(data_path: str, gff3: GFF3_Handler_V3):
 			vcf_file = open(data_path + "Special_VCF_To_Many_Stops" + str(datetime.now()) + ".vcf", "w")
 			# vcf_file.write("#Chrom\tPos\tID\tRef\tAlt\tInfo\n")
 			vcf_file.write("#Transcripts with 2 or more STOPs\n")
@@ -346,7 +346,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 							   + "\t" + "RNA_END"
 							   + "\t" + "Gene_Start"
 							   + "\t" + "Gene_End" + "\n")
-				for transcriptHier in gff3.GetChrTranscripts(name).values():
+				for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 					transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
 					if not transcriptHier.CDS_Exist:  # or transcriptHier.Transcript_CDS_damaged:
 						continue
@@ -405,7 +405,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					continue
 			vcf_file.close()
 
-		def Write_All_VCF_NO_START(data_path: str, gff3: GFF3_Handler):
+		def Write_All_VCF_NO_START(data_path: str, gff3: GFF3_Handler_V3):
 			vcf_file = open(data_path + "Special_VCF_NO_START" + str(datetime.now()) + ".vcf", "w")
 			# vcf_file.write("#Chrom\tPos\tID\tRef\tAlt\tInfo\n")
 			vcf_file.write("#Transcripts without START in the beginning codon\n")
@@ -416,7 +416,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 							   + "\t" + "RNA_END"
 							   + "\t" + "Gene_Start"
 							   + "\t" + "Gene_End" + "\n")
-				for transcriptHier in gff3.GetChrTranscripts(name).values():
+				for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 					transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
 					if not transcriptHier.CDS_Exist:  # or transcriptHier.Transcript_CDS_damaged:
 						continue
@@ -468,7 +468,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 
 
 	def Write_All_VCF_File(data_path: str,
-						   gff3: GFF3_Handler,
+						   gff3: GFF3_Handler_V3,
 						   Old_Info: bool,
 						   Ref_Codons: bool,
 						   Ref_AA: bool,
@@ -513,7 +513,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		vcf_file.write("#If there are no shared effect keys, the value is:\"NONE\".\n")
 		data_to_write = []
 		for name in gff3.GetChromosomeNames():
-			for transcriptHier in gff3.GetChrTranscripts(name).values():
+			for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 				transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
 
 				if not transcriptHier.CDS_Exist or transcriptHier.Transcript_CDS_damaged:
@@ -557,10 +557,10 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 							shared_effect_list += str(vinfo_effects.ChrPosition)
 							if i != (shared_effect_list_len - 1):
 								shared_effect_list += ","
-								#seperate entrys
+							#seperate entrys
 							elif i == shared_effect_list_len - 1:
 								shared_effect_list += "|"
-								#after last entry
+							#after last entry
 							else:
 								print("Bug Write_All_VCF_File: shared_effect_list:" + str(transcriptHier.TID))
 
@@ -569,20 +569,20 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						bug = "OrigTriplets: " + str(vinfo.OrigTriplets) \
 							  + "\tFrom: " \
 							  + transcriptHier.TID \
-							  + ": "\
-							  + str(vinfo.ChrPosition)\
-							  + " "\
+							  + ": " \
+							  + str(vinfo.ChrPosition) \
+							  + " " \
 							  + classificationstring
 						print(bug)
 						For_Type_Safety_and_statics.log.append(bug + "\n")
 					elif len(vinfo.ChangedTriplets) % 3 != 0:
 						print("Possible Bug:")
 						bug = "ChangedTriplets: " + str(vinfo.ChangedTriplets) \
-							  + "\tFrom: "\
+							  + "\tFrom: " \
 							  + transcriptHier.TID \
-							  + ": "\
+							  + ": " \
 							  + str(vinfo.ChrPosition) \
-							  + " "\
+							  + " " \
 							  + classificationstring
 						print (bug)
 						For_Type_Safety_and_statics.log.append(bug + "\n")
@@ -637,7 +637,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			data_to_write = []
 		vcf_file.close()
 
-	def Create_Sequences(gff3: GFF3_Handler, Orig_AA: bool, New_AA: bool, genetic_code: dict):
+	def Create_Sequences(gff3: GFF3_Handler_V3, Orig_AA: bool, New_AA: bool, genetic_code: dict):
 		"""
 		This function calculates the old and new AA CDS to be sure all transcripts are having the AA sequences.
 		There are a few possibilities to this point, which can lead to skip a few or all transcripts AA sequences.
@@ -650,7 +650,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		"""
 		for chrName in gff3.GetChromosomeNames():
 			print(chrName)
-			for currentTranscript in gff3.GetChrTranscripts(chrName).values():
+			for currentTranscript in gff3.GetChrTranscriptsDict(chrName).values():
 				currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
 
 				if not currentTranscript.CDS_Exist:
@@ -663,7 +663,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				if New_AA:
 					currentTranscript.Create_IV_ChangedTranslation(genetic_code)
 
-	def Complete_Check(gff3: GFF3_Handler, ghandler: GenomHandler):
+	def Complete_Check(gff3: GFF3_Handler_V3, ghandler: GenomHandler):
 		"""
 		Its always a good idea to test the data in the end.
 		Will print warnings, if there is incorrect data.
@@ -672,7 +672,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		:return: Nothing.
 		"""
 		for chrName in Shared_Chromosomes_FA_GFF3:
-			Chr_Transcript_List = gff3.GetChrTranscripts(chrName).values()
+			Chr_Transcript_List = gff3.GetChrTranscriptsDict(chrName).values()
 			for currentTranscript in Chr_Transcript_List:
 				currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
 				if not currentTranscript.CDS_Exist or currentTranscript.Transcript_CDS_damaged:
@@ -835,6 +835,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 								print("DELETION_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
 									vinfo.ChrPosition))
 
+
 							if vinfo.ReverseAlt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
 									vinfo.Changed_CDS_Position,
 									vinfo.Changed_CDS_Position):
@@ -863,7 +864,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						Orig_AA: bool,
 						New_DNA: bool,
 						New_AA: bool,
-						gff3: GFF3_Handler):
+						gff3: GFF3_Handler_V3):
 		"""
 		Writes a new fasta file with all CDS sequences from every transcript,
 		including possible spliced variant of the transcripts (GFF3 data).
@@ -896,7 +897,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				"#Data in here may be incomplete and incorrect because of deletions, which destroyed parts the splice sides.\n"]
 
 			for chrName in gff3.GetChromosomeNames():
-				for currentTranscript in gff3.GetChrTranscripts(chrName).values():
+				for currentTranscript in gff3.GetChrTranscriptsDict(chrName).values():
 					currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
 
 					if not currentTranscript.CDS_Exist:
@@ -1062,7 +1063,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	#######################################
 	print("read gff3")
 	print("Hopefully sorted after seqID")
-	gff3 = GFF3_Handler(gff3_path_and_name, firstxChr)
+	gff3 = GFF3_Handler_V3(gff3_path_and_name)
 	print("Done: " + str(datetime.now() - timeStart))
 	#######################################
 	print("read fa")
@@ -1083,21 +1084,28 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		if name in ghandler.GetChromosomeNames():
 			Shared_Chromosomes_FA_GFF3.append(name)
 	print("Shared_Chromosomes(all):" + str(Shared_Chromosomes))
-	print("Shared_Chromosomes, fasta, gff3 (and used):" + str(Shared_Chromosomes_FA_GFF3))
+	#print("Shared_Chromosomes, fasta, gff3 (and used):" + str(Shared_Chromosomes_FA_GFF3))
 
 	### For Writing the CDS
 	### in all transcripts
 
 	print("Write the CDS and Rev CDS")
 
-	for name in Shared_Chromosomes_FA_GFF3:
+	for name in Shared_Chromosomes:
 		print(name)
-		chrID = gff3.dictChrNames[name]
-		trancripts = gff3.dictListOfTranscripts[chrID]
-		for i in gff3.dictListOfTranscripts[gff3.dictChrNames[name]]:  # only a number, not the object
-			trancripts[i].CompleteTheCDS(ghandler.seq(name, trancripts[i].StartOfRNA, trancripts[i].EndOfRNA))
-			if trancripts[i].ForwardDirection == TranscriptEnum.REVERSE:
-				trancripts[i].ReverseTheCDS()
+		#chrID = gff3.GetChromosomeID(name)
+
+		#for i in gff3.dictListOfTranscripts[gff3.dictChrNames[name]]:  # only a number, not the object
+		#	trancripts[i].CompleteTheCDS(ghandler.seq(name, trancripts[i].StartOfRNA, trancripts[i].EndOfRNA))
+		#	if trancripts[i].ForwardDirection == TranscriptEnum.REVERSE:
+		#		trancripts[i].ReverseTheCDS()
+
+		for trancript in gff3.GetChrTranscriptsDict(name).values():
+			trancript.CompleteTheCDS(ghandler.seq(name, trancript.StartOfRNA, trancript.EndOfRNA))
+			if trancript.ForwardDirection == TranscriptEnum.REVERSE:
+				trancript.ReverseTheCDS()
+
+
 	print("Done: " + str(datetime.now() - timeStart))
 
 
@@ -1110,11 +1118,12 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	###
 	transcriptRange = 300 # base pairs before RNA starts and after RNA ends. Just in Case for long InDels.
 	print("Connect transcripts with variants")
-	for name in Shared_Chromosomes_FA_GFF3:
+	for name in Shared_Chromosomes:
 		print("Search in " + name)
+
 		currentTranscriptID = 0 # initialization, first Round == 0
 		firstTranscriptMatch = 0 #
-		currentTranscriptList = gff3.ListOfTranscripts[gff3.dictChrNames[name]]
+		currentTranscriptList = gff3.GetChrTranscriptList(name)
 		transcriptsWithMultiAllelVariants = []
 
 		for variant in vcf.GetChr_VCF_Variant_List(name):
@@ -1130,7 +1139,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					break
 				currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscriptList[currentTranscriptID])
 				if (
-					currentTranscript.StartOfRNA - transcriptRange) > variant.Position:  # transcriptstart higher than variant.position
+							currentTranscript.StartOfRNA - transcriptRange) > variant.Position:  # transcriptstart higher than variant.position
 					break
 				elif (currentTranscript.StartOfRNA - transcriptRange) <= \
 						variant.Position \
@@ -1171,9 +1180,11 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			currentTranscript.Remove_Mult_Allel_Entry_In_All_Variant_Information(1)
 			newTranscript.IndexKey = gff3.GetNextTranscriptIndex()
 			currentTranscriptList.append(newTranscript)
-			currentTranscriptList = sorted(currentTranscriptList, key=lambda sTranscript: sTranscript.StartOfRNA)
-			gff3.dictListOfTranscripts[gff3.dictChrNames[name]][newTranscript.TID] = newTranscript
-		gff3.ListOfTranscripts[gff3.dictChrNames[name]] = currentTranscriptList
+			#currentTranscriptList = sorted(currentTranscriptList, key=lambda sTranscript: sTranscript.StartOfRNA)
+			#gff3.dictListOfTranscripts[gff3.dictChrNames[name]][newTranscript.TID] = newTranscript
+			gff3.AddNewTranscriptToDict(name, newTranscript)
+		gff3.updateTransripts(currentTranscriptList,name)
+	#gff3.ListOfTranscripts[gff3.dictChrNames[name]] = currentTranscriptList
 
 	print("Done: " + str(datetime.now() - timeStart))
 
@@ -1184,9 +1195,9 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	########
 	print("Calculate the effect length")
 
-	for name in Shared_Chromosomes_FA_GFF3:
+	for name in Shared_Chromosomes:
 		print(name)
-		aTranscriptDict = gff3.GetChrTranscripts(
+		aTranscriptDict = gff3.GetChrTranscriptsDict(
 			name)  # self.dictListOfTranscripts = [{}] # List for chromosomes, dict for normal entrys
 		for currentTranscript in aTranscriptDict.values():
 			currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
@@ -1197,7 +1208,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				continue
 
 			currentTranscript.Create_IV_Changed_DNA_CDS_Seq(genetic_code, currentTranscript.IntegratedVariantObjects_CDS_Hits,
-														 stopcodon)
+															stopcodon)
 			while currentTranscript.Lost_Stop:
 				currentTranscript.Create_IV_ChangedTranslation(genetic_code)
 				if stopcodon in currentTranscript.IV_ChangedTranslation:

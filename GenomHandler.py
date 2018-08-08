@@ -56,6 +56,8 @@ class GenomHandler():
             finallines = "".join(lines).replace("\n", "")
             self.originChromosomeData.append(finallines)
         # originChromosomeData.append(lines)
+        if (self.originChromosomeData[0] == []):
+            self.originChromosomeData.pop(0)
         DataFile.close()
         someint = 0
         for name in self.originChromosomeNames:

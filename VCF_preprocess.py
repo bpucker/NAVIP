@@ -340,6 +340,45 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 			continue
 		i += 1
 
+	def remove_shitty_data(lines:list)->list:
+		i = 0
+		removedEntries = 0
+		max = len(lines) - 1
+		pos = 0
+		oldline = ""
+		while i <= max:
+			line = lines[i]
+			spline = line.split("\t")
+			if int(spline[1]) > pos:
+				oldline = line
+				pos = int(spline[1])
+				pos += -1 + len(spline[3]) #+ length of ref, for deletions
+				i +=1
+			elif spline[0] == oldline.split("\t")[0]:
+				#print("Removed:\n" + line + "Because of:\n" + oldline)
+
+				VCF_preproc_log_in_short.append("Rem.:\t" + str("\t".join(lines[i].split("\t")[0:5])) + "\n")
+				VCF_preproc_log.append("Removed: " + str(lines[i]))
+				VCF_preproc_log_in_short.append("Because:\t" + str("\t".join(oldline.split("\t")[0:5])) + "\n")
+				VCF_preproc_log.append(oldline)
+				del lines[i]
+				removedEntries +=1
+				max -= 1
+			else:
+				oldline = line
+				pos = int(spline[1])
+				pos += -1 + len(spline[3])  # + length of ref, for deletions
+				i += 1
+		print(str(removedEntries) + " lines removed, because of conflicting data (see log).")
+		return lines
+
+	VCF_preproc_log_in_short.append("Data Conflicts in File 1:\n")
+	lines1 = remove_shitty_data(lines1)
+	print("Remove Shitty data 1 done: "+ str(datetime.now() - starttime))
+	VCF_preproc_log_in_short.append("Data Conflicts in File 2:\n")
+	lines2 = remove_shitty_data(lines2)
+	print("Remove Shitty data 2 done: " + str(datetime.now() - starttime))
+
 	nvcf_1 = open (new1_vcf,"w")
 	nvcf_1.write("".join(lines1))
 	nvcf_1.close()

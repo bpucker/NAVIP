@@ -106,12 +106,12 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
                     if len(shared_line.split("\t")[3]) > 1 or len(shared_line.split("\t")[4]) > 1:
                         continue
                     elif abs(int(shared_line.split("\t")[7].split("|")[9]) - cds) == 2:
-                        if chr +"_"+ pos +"_"+ str(shared_line.split("\t")[0]) in all_sdcv:
+                        if chr +"?"+ pos +"?"+ str(shared_line.split("\t")[0]) in all_sdcv:
                             continue
-                        elif chr +"_"+ str(shared_line.split("\t")[0]) +"_"+ pos in all_sdcv:
+                        elif chr +"?"+ str(shared_line.split("\t")[0]) +"?"+ pos in all_sdcv:
                             continue
                         else:
-                            all_sdcv[chr +"_"+ pos +"_"+ str(shared_line.split("\t")[7].split("|")[0])] = (line,shared_line)
+                            all_sdcv[chr +"?"+ pos +"?"+ str(shared_line.split("\t")[7].split("|")[0])] = (line,shared_line)
 
         return all_sdcv
 
@@ -357,7 +357,7 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         first_tid_dict = {}
         sortme = []
         for key in all_tid_sdcv_dict:
-            sortme.append((str(key).split("_")[0],str(key).split("_")[1],key,all_tid_sdcv_dict[key]))
+            sortme.append((str(key).split("?")[0],str(key).split("?")[1],key,all_tid_sdcv_dict[key]))
         sortme = sorted(sortme, key = lambda triple: (str(triple[0]), int(triple[1]), int(triple[2].split(".")[1])))
 
         for entry in sortme:

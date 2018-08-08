@@ -278,11 +278,6 @@ class Transcript:
 		# list needs to be ordered after position, so the new cds position can be calculated.
 		# because every variants cds position can be changed with previous indels.
 		for vinfo in IntegratedVariantObjects:
-			if self.TID == "AT1G53705.1":
-				asdasdasd = len(self.IV_Changed_DNA_CDS_Seq)
-				print("bugsearch 20051204, 'AT1G53705.1'")
-			if self.TID == "VIT_218s0001g03710.1":
-				print("bugsearch VIT_218s0001g03710.1")
 
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
 				alt = vinfo.Alt
@@ -306,10 +301,6 @@ class Transcript:
 					first = self.IV_Changed_DNA_CDS_Seq[0:firstkoord]
 				else:
 					first = ""
-
-				print(str(self.TID) + "\t" + str(vinfo.ChrPosition))
-				if self.TID == "VIT_218s0001g03710.1":
-					print("bugsearch VIT_218s0001g03710.1")
 
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
 				if test != ref:
@@ -406,7 +397,7 @@ class Transcript:
 						Marked = True
 					elif old_vinfo.EndOfOwnEffect == VariantEnum.NO_EndOfOwnEffect:
 						if TranscriptEnum.STOP_GAINED in old_vinfo.Classification:
-							if TranscriptEnum.STOP_GAINED in current_vinfo.Classification:
+							#if TranscriptEnum.STOP_GAINED in current_vinfo.Classification:
 								if TranscriptEnum.DELETION in old_vinfo.Classification:
 									endeffect_without_stop = old_vinfo.Changed_CDS_Position + (2 - old_vinfo.Changed_Raster)
 								elif TranscriptEnum.INSERTION in old_vinfo.Classification:
@@ -420,12 +411,12 @@ class Transcript:
 										  "\t" + str(old_vinfo.ChrPosition) +
 										  "\t" + str(current_vinfo.ChrPosition))
 									break
-								if endeffect_without_stop >= current_vinfo.StartOfOwnEffect:
-									Marked = True
-							else:
-								Marked = False
-								in_the_end = True # after stop nothing matters
-								break
+								#if endeffect_without_stop >= current_vinfo.StartOfOwnEffect:
+								Marked = True
+							#else:
+							#	Marked = False
+							#	in_the_end = True # after stop nothing matters
+							#	break
 						else:
 							Marked = True
 					elif old_vinfo.EndOfOwnEffect >= current_vinfo.StartOfOwnEffect:
@@ -981,8 +972,6 @@ class Transcript:
 				cds_2 = self.SearchPositionInCDS(variant.Position + len(variant.Reference) - 1)
 
 		else: # self.ForwardDirection == TranscriptEnum.REVERSE:
-			if variant.Position == 20050478:
-				print("bugtest 20050478")
 			CDS_Position = self.SearchPositionInCDSReverse(variant.Position)
 			if len(variant.Reference) > 1:  # DEL
 				CDS_Position = self.SearchPositionInCDSReverse(variant.Position + (len(variant.Reference) - 1))
@@ -1291,7 +1280,7 @@ class For_Type_Safety_and_statics:
 	@staticmethod
 	def ReverseSeq (dna: str):
 		"""
-		It will build a biologically reverse dna strand.
+		It will build a biologically reversed dna strand.
 		:param dna: string
 		:return: biologically reversed dna string
 		"""
