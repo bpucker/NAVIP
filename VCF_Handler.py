@@ -1,5 +1,8 @@
+__author__  = "Jan-Simon Baasner"
+__email__   = "janbaas@cebitec.uni-bielefeld.de"
+
+
 import VCF_Variant
-from enum import Enum
 
 class VCF_HANDLER:
 	"""
@@ -39,6 +42,10 @@ class VCF_HANDLER:
 
 
 			while (lines):
+
+				while (lines.startswith("#")):
+					lines = DataFile.readline()
+					continue
 
 				if (lines.split("\t")[0] == ChromosomFlag) :
 					Now = lines.split('\t')

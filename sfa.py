@@ -1,3 +1,7 @@
+__author__  = "Jan-Simon Baasner"
+__email__   = "janbaas@cebitec.uni-bielefeld.de"
+
+
 import matplotlib.pyplot as plt
 from datetime import datetime
 
@@ -52,6 +56,9 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         """
         #0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         #Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
         dictdict = {}
         vcf_file = open(path_with_vcf_file, "r")
         line = vcf_file.readline()
@@ -73,8 +80,13 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         :param genedict: Dictionary containing all variants per transcript.
         :return: Dictionary, containing all DVC.
         """
+        # old
         # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # new why why why no enums for indexes, i should have known better
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
         sortme = []
         for gene in genedict:
             sortme.append(gene)
@@ -85,7 +97,7 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
                 line = genedict[sortetgene][pos]
                 if len(line.split("\t")[3]) > 1 or len(line.split("\t")[4]) > 1:
                     continue
-                cds = int(line.split("\t")[7].split("|")[8])
+                cds = int(line.split("\t")[7].split("|")[9])
                 chr = str(line.split("\t")[0])
                 pos = str(line.split("\t")[1])
                 for shared_id in line.split("\t")[7].split("|")[3].split(","):
@@ -93,13 +105,13 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
                     shared_line = genedict[sortetgene][shared_id]
                     if len(shared_line.split("\t")[3]) > 1 or len(shared_line.split("\t")[4]) > 1:
                         continue
-                    elif abs(int(shared_line.split("\t")[7].split("|")[8]) - cds) == 2:
-                        if chr +"_"+ pos +"_"+ str(shared_line.split("\t")[0]) in all_sdcv:
+                    elif abs(int(shared_line.split("\t")[7].split("|")[9]) - cds) == 2:
+                        if chr +"?"+ pos +"?"+ str(shared_line.split("\t")[0]) in all_sdcv:
                             continue
-                        elif chr +"_"+ str(shared_line.split("\t")[0]) +"_"+ pos in all_sdcv:
+                        elif chr +"?"+ str(shared_line.split("\t")[0]) +"?"+ pos in all_sdcv:
                             continue
                         else:
-                            all_sdcv[chr +"_"+ pos +"_"+ str(shared_line.split("\t")[7].split("|")[0])] = (line,shared_line)
+                            all_sdcv[chr +"?"+ pos +"?"+ str(shared_line.split("\t")[7].split("|")[0])] = (line,shared_line)
 
         return all_sdcv
 
@@ -131,6 +143,9 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         """
         # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
         sortme = []
         for gene in genedict:
             sortme.append(gene)
@@ -186,7 +201,6 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         for listi in indel_neutralize_dict:
             for line in indel_neutralize_dict[listi]:
                 outie.append(line)
-            # sortme.append(uniquq_sdcv_dict[tuple][1])
         outie = sorted(outie, key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
         indel_vcf = open(path,"w")
         indel_vcf.write("".join(outie))
@@ -213,9 +227,11 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
             for a2 in AA:
                 AAC_Table[a1, a2] = 0
 
+            # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+            # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
         while line:
             orig_aa = line.split("\t")[7].split("|")[5]
-            new__aa = line.split("\t")[7].split("|")[7]
+            new__aa = line.split("\t")[7].split("|")[8]
             if (orig_aa, new__aa) in AAC_Table:
                 AAC_Table[orig_aa, new__aa] += 1
             else:
@@ -231,7 +247,7 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         Writes the AAC table into a text file.
         :param aac_dict: Dictionary, containing from which original AA to which new AA the variants mutate.
         :param AAC_out_path: Path and file name for the output.
-        :return: NOthing.
+        :return: Nothing.
         """
         sortme = []
         AA = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V", "*"]
@@ -303,14 +319,18 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         for i,line in enumerate(lines):
             # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
             # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+            # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+            # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
+
             if i == len(lines)-1:
                 continue
             oaa1 = line.split("\t")[7].split("|")[5]
-            naa1 = line.split("\t")[7].split("|")[7]
+            naa1 = line.split("\t")[7].split("|")[8]
             tid1 = line.split("\t")[7].split("|")[0]
 
             oaa2 = lines[i+1].split("\t")[7].split("|")[5]
-            naa2 = lines[i+1].split("\t")[7].split("|")[7]
+            naa2 = lines[i+1].split("\t")[7].split("|")[8]
             tid2 = lines[i+1].split("\t")[7].split("|")[0]
 
             if tid1 != tid2:
@@ -336,18 +356,13 @@ def use_shared_numbers(old_vcf:str,new_vcf:str,sdvc_vcf:str,InDel_vcf:str, AAC_o
         first_tid_dict = {}
         sortme = []
         for key in all_tid_sdcv_dict:
-            sortme.append((str(key).split("_")[0],str(key).split("_")[1],key,all_tid_sdcv_dict[key]))
+            sortme.append((str(key).split("?")[0],str(key).split("?")[1],key,all_tid_sdcv_dict[key]))
         sortme = sorted(sortme, key = lambda triple: (str(triple[0]), int(triple[1]), int(triple[2].split(".")[1])))
 
         for entry in sortme:
             key = entry[2].split(".")[0]
             first_tid_dict[key] = entry[3]
         return first_tid_dict
-
-    #old_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/2017-10-17 17:17:56.641179_All_VCF_.vcf"
-    #new_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/no_NONE.vcf"
-    #sdvc_vcf= "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/dcv.vcf"
-    #InDel_vcf="/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/indel_neutralize.vcf"
 
     #create a vcf file only with vcf with shared ids -> only variants with shared effects
     no_NONE(old_vcf,new_vcf)
@@ -432,7 +447,6 @@ def main_for_compare_AA_length(navip_fasta_file:str, aa_len_dif_txt:str):
                 else:
                     tid_type_dict[tid, type] = first_stop = line.find("*")
                 line = my_fasta_file.readline()
-                # print (line)
         tid_list = sorted(tid_list)
         #sortme = sorted(sortme, key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
 
@@ -641,6 +655,10 @@ def count_stuff_unique(path_to_neutralized_indels:str, no_none_vcf:str, outpath:
         uniques = []
         # 0      1       2   3   4   5       6       7.0         7.1 7.2                                 7.3     7.4   7.5  7.6 7.7 7.8 7.9
         # Chr1	791050	.	CAG	C	2159.86	PASS	AT1G03230.1|FOR|DEL,Frameshift-2,Amino acid change|791053|GCAGCG;1|aa|GCC;1|a|941|NAVIP_END
+        # 0      1       2   3   4   5       6       7.0         7.1 7.2                  7.3   7.4  7.5 7.6 7.7 7.8 7.9    7.10
+        # Chr1	63644	.	T	A	4596.77	PASS	AT1G01130.1|REV|SUB,Amino acid change|63645|TGT;2|t|168|ACT;2|s|168|NAVIP_END|
+
+
         while line:
             splitedline = line.split("\t")
             if str(splitedline[0]) +"_"+ str(splitedline[1]) +"_"+str(splitedline[7].split("|")[0].split(".")[0]) not in uniques:
@@ -782,28 +800,22 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         """
 
         # my output vcf (NAVIP)
-        #old_navip_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/2017-10-17 17:17:56.641179_All_VCF_.vcf"
         old_navip_vcf = innavipvcf
 
         # for output of only variants with shared effects
-        # new_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/no_NONE.vcf"
         new_vcf = outpath + "no_NONE.vcf"
 
         # DVC will be sorted after the first TID with a Double-Variant-inside-one-Codon-effect
         # including unsync DVC
-        # sdvc_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/dvc.vcf"
         sdvc_vcf = outpath + "dvc.vcf"
 
         # all indels, which neutralize their effects (+2 -1 -1 == 0)
-        # InDel_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/indel_neutralize.vcf"
         InDel_vcf = outpath + "indel_neutralize.vcf"
 
         # table for AAC overview
-        # AAC_out_path = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/AAC_Tab.txt"
         AAC_out_path = outpath + "AAC_Tab.txt"
 
         # DVC wihtout same origin tripplet (due to frameshifts)
-        # unsync_dvc_out = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/dvc_unsync.vcf"
         unsync_dvc_out = outpath + "dvc_unsync.vcf"
 
         #does all the funny stuff for the 5 output files
@@ -819,11 +831,9 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         #name and path to the new datafile
         # > len_dif counted_length
         # all tids, max 10 per row, many rows
-        #aa_len_dif = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/AA_length_dif.txt"
         aa_len_dif = outpath + "AA_length_dif.txt"
 
         #from NAVIP created fasta file with 4x cds from every ttransctipt (original and new DNA/AA)
-        #navip_fasta_file = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/2017-10-09 16:32:31.872025_all_transcripts_data.fa"
         navip_fasta_file = innavipfasta
 
         # organize the stuff for comparing length of AA)
@@ -835,7 +845,6 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         :return: Nothing.
         """
 
-        # aa_len_dif = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/AA_length_dif.txt"
         aa_len_dif = outpath + "AA_length_dif.txt"
 
         plots(aa_len_dif,outpath)
@@ -847,11 +856,9 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         """
 
         # all indels, which neutralize their effects (+2 -1 -1 == 0)
-        # InDel_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/indel_neutralize.vcf"
         InDel_vcf = outpath + "indel_neutralize.vcf"
 
         # for output of only variants with shared effects
-        # new_vcf = "/prj/gf-arabseq/project_VariantAnnotation/data/CollisionData/no_NONE.vcf"
         no_none_vcf = outpath + "no_NONE.vcf"
 
         count_stuff_unique(InDel_vcf, no_none_vcf, outpath)
@@ -859,10 +866,10 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
 
     time = datetime.now()
     print("##################################################################################")
-    print("VCF work start.")
+    print("VCF work starting.")
     vcf_stuff()
     print("VCF work is done:" + str(datetime.now() - time))
-    print("AA work start.")
+    print("AA work starting.")
     aa_len_stuff ()
     print("AA work is done:" + str(datetime.now() - time))
     print("plots starting")

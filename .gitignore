@@ -6,7 +6,7 @@ __pycache__/
 # PyCharm + testing stuff
 .idea/
 __pycache__/
-compary.py
+compare.py
 testumgebung.py
 
 

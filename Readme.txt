@@ -5,7 +5,9 @@ NAVIP has three existing modules: \
 
 
 You can choose the module with "--mode <module>".
-The module shortcuts are "pre","main" and "sfa".
+The module shortcuts are "pre","main" and "sfa" and there is a vcf-format-check "vcfc".
+
+For the VCF-Check: "--mode vcfc --invcf <path_with_file>"
 
 VCF preprocessing needs two more arguments:
 
