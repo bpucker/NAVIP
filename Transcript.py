@@ -1015,15 +1015,17 @@ class Transcript:
 		:return: Nothing.
 		"""
 		for multiAllelVariant in self.IntegratedVariantObjects_CDS_Hits:
-			if "," in multiAllelVariant.Alt and not self.TID_locked:
+			if "," in multiAllelVariant.Alt:
 
 				self.MultiAllelVariants = True
 				multiAllelVariant.Alt = multiAllelVariant.Alt.split(",")[zero_or_one]
-				self.MultiAllelVariants = True
-				if zero_or_one == 0:
+
+				if zero_or_one == 0 and not self.TID_locked:
 					self.TID = str(self.TID) + "B"
-				elif zero_or_one == 1:
+					self.TID_locked = True
+				elif zero_or_one == 1 and not self.TID_locked:
 					self.TID = str(self.TID) + "A"
+					self.TID_locked = True
 				else:
 					print("Maybe bug in :Remove_Mult_Allel_Entry_In_All_Variant_Information with :" +self.TID)
 
@@ -1105,6 +1107,31 @@ class Transcript:
 
 
 		return PositionInCDS
+
+	def SearchPositionPairAroundTranscript(self, StartpositionInChr:int , EndpositionInChr:int):
+		"""
+		CDS are numbered from 0 up. The output of this funtcion is a tuple from -0.5 to the maximal CDS number +0.5 to
+		prescind where the Positions are.
+		:param StartpositionInChr: The position of the variant.
+		:param EndpositionInChr: The position of the variant + length of deletion.
+		:return: Tuple of floats.
+		"""
+		result = (float(0.0),float(0.0))
+		for i,CDS in enumerate(self.ListofCDS):
+			if StartpositionInChr < CDS[0]:
+				result[0] = float(i) - float(0.5)
+			elif CDS[0] <= StartpositionInChr <= CDS[1]:
+				result[0] = float(i)
+			elif StartpositionInChr > CDS[1] and i -1 == len(self.ListofCDS):
+				result[0] = float(i) + float(0.5)
+
+			if EndpositionInChr < CDS[0]:
+				result[1] = float(i) - float(0.5)
+			elif CDS[0] <= EndpositionInChr <= CDS[1]:
+				result[1] = float(i)
+			elif EndpositionInChr > CDS[1] and i - 1 == len(self.ListofCDS):
+				result[1] = float(i) + float(0.5)
+		return result
 
 	def SearchPositionInCDSReverse(self, PositionInChr: int) -> int:
 		"""

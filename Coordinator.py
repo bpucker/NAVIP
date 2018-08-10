@@ -1092,6 +1092,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		firstTranscriptMatch = 0 #
 		currentTranscriptList = gff3.GetChrTranscriptList(name)
 		transcriptsWithMultiAllelVariants = []
+		transcriptsWithoutStop = []
 
 		for variant in vcf.GetChr_VCF_Variant_List(name):
 			found = True
@@ -1117,6 +1118,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					if "," in variant.Alternate and currentTranscript not in transcriptsWithMultiAllelVariants:
 						# not necessary with vcf-preprocessing - but maybe the data change in the future -> usefull again
 						transcriptsWithMultiAllelVariants.append(currentTranscript)
+					if TranscriptEnum.STOP_LOST in currentTranscript.Lost_Stop:
+						transcriptsWithoutStop.append(currentTranscript)
 
 					currentTranscript.ListofVariants.append(variant.Position)
 					variant.ListofTranscripts.append(currentTranscript.IndexKey)
@@ -1150,6 +1153,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			#currentTranscriptList = sorted(currentTranscriptList, key=lambda sTranscript: sTranscript.StartOfRNA)
 			#gff3.dictListOfTranscripts[gff3.dictChrNames[name]][newTranscript.TID] = newTranscript
 			gff3.AddNewTranscriptToDict(name, newTranscript)
+
+
 		gff3.updateTransripts(currentTranscriptList,name)
 	#gff3.ListOfTranscripts[gff3.dictChrNames[name]] = currentTranscriptList
 
