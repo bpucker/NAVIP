@@ -530,7 +530,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					direction = "REV"
 				else:
 					#will never happen
-					LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Error:NOT Forward, NOT Reverse:" + str(transcriptHier.TID))
+					LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Error:NOT Forward, NOT Reverse:" + str(transcriptHier.TID) + "\n")
 					direction = "Error:NOT Forward, NOT Reverse."
 
 				for vinfo in transcriptHier.IntegratedVariantObjects_CDS_Hits:
@@ -545,7 +545,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						elif i == (class_list_length - 1):
 							classificationstring += "|"
 						else:
-							print("Bug Write_All_VCF_File: classification list length:" + str(transcriptHier.TID))
+							LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Bug Write_All_VCF_File: classification list length:" + str(transcriptHier.TID) + "\n")
 
 					shared_effect_list = ""
 					if len(vinfo.SharedEffectsWith) > 0:
@@ -563,10 +563,9 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 								shared_effect_list += "|"
 							#after last entry
 							else:
-								print("Bug Write_All_VCF_File: shared_effect_list:" + str(transcriptHier.TID))
+								LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Bug Write_All_VCF_File: shared_effect_list:" + str(transcriptHier.TID) + "\n")
 
 					if len(vinfo.OrigTriplets) % 3 != 0:
-						print("Possible Bug:")
 						bug = "OrigTriplets: " + str(vinfo.OrigTriplets) \
 							  + "\tFrom: " \
 							  + transcriptHier.TID \
@@ -574,10 +573,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 							  + str(vinfo.ChrPosition) \
 							  + " " \
 							  + classificationstring
-						print(bug)
 						LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,bug + "\n")
 					elif len(vinfo.ChangedTriplets) % 3 != 0:
-						print("Possible Bug:")
 						bug = "ChangedTriplets: " + str(vinfo.ChangedTriplets) \
 							  + "\tFrom: " \
 							  + transcriptHier.TID \
@@ -585,7 +582,6 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 							  + str(vinfo.ChrPosition) \
 							  + " " \
 							  + classificationstring
-						print (bug)
 						LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,bug + "\n")
 					# Info:TranscriptID|"
 					#   "Strand_Direction|"
@@ -1062,7 +1058,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	print("Done: " + str(datetime.now() - timeStart))
 	#######################################
 	print("read gff3")
-	print("Hopefully sorted after seqID")
+	#print("Hopefully sorted after seqID")
 	gff3 = GFF3_Handler_V3(gff3_path_and_name)
 	print("Done: " + str(datetime.now() - timeStart))
 	#######################################
@@ -1151,7 +1147,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					if "," in variant.Alternate and currentTranscript not in transcriptsWithMultiAllelVariants:
 						# not necessary with vcf-preprocessing - but maybe the data change in the future -> usefull again
 						transcriptsWithMultiAllelVariants.append(currentTranscript)
-					if TranscriptEnum.STOP_LOST in currentTranscript.Lost_Stop:
+					if currentTranscript.Lost_Stop:
 						transcriptsWithoutStop.append(currentTranscript)
 
 					currentTranscript.ListofVariants.append(variant.Position)
@@ -1267,11 +1263,6 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 
 	LogOrganizer.writeAllLogs(outpath)
 
-	logs = "".join(For_Type_Safety_and_statics.log)
-	logfile = open(Output_Data_Path + str(datetime.now()) + "_logfile.log", "w")
-	logfile.write(logs)
-	logfile.close()
-	
 	print("Everything is done: " + str(datetime.now() - timeStart))
 
 

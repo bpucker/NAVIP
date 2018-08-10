@@ -26,7 +26,7 @@ class LogOrganizer:
 		if str(LogName.value) in LogOrganizer.log:
 			LogOrganizer.log[str(LogName.value)].append(text)
 		else:
-			LogOrganizer.log[str(LogName.value)] = text
+			LogOrganizer.log[str(LogName.value)] = [text]
 
 	@staticmethod
 	def writeLog(LogName: LogEnums, outpath:str):

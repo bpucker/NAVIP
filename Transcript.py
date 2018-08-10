@@ -1326,7 +1326,6 @@ class For_Type_Safety_and_statics:
 	It is more comfortable to use python, when the IDE knows, which type the current variables are.
 	Furthermore it has a variety of methods which are used often.
 	"""
-	log = []
 
 	@staticmethod
 	def Variant_Information_Storage_Type_Safety(vinfo: Variant_Information_Storage) -> Variant_Information_Storage:
