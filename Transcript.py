@@ -4,7 +4,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 from enum import Enum, unique
 from VCF_Variant import Variant,VariantEnum
-from Gff3_Handler import GFF3_Handler
+from LogOrganizer import LogEnums, LogOrganizer
 
 
 
@@ -215,13 +215,16 @@ class Transcript:
 			return True
 		else:
 			if self.Complete_CDS != "":
-				print("No CDS: " + str(self.TID))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_CDS_CREATION_LOG, "No CDS: " + str(self.TID) + "\n")
+				#print("No CDS: " + str(self.TID))
 				return False
 			elif self.Rev_CDS != "":
-				print("No Rev CDS: " + str(self.TID))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_CDS_CREATION_LOG, "No Rev CDS: " + str(self.TID) + "\n")
+				#print("No Rev CDS: " + str(self.TID))
 				return False
 			else:
-				print ("No direction?: " + str(self.TID))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_CDS_CREATION_LOG, "No direction?: " + str(self.TID) + "\n")
+				#print ("No direction?: " + str(self.TID))
 				return False
 
 	def Create_IV_ChangedTranslation (self, genetic_code: dict) -> bool:
@@ -241,13 +244,16 @@ class Transcript:
 			return True
 		else:
 			if self.IV_Changed_DNA_CDS_Seq == "" and self.Complete_CDS == "":
-				print("No CDS: " + str(self.TID))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No CDS: " + str(self.TID) + "\n" )
+				#print("No CDS: " + str(self.TID))
 				return False
 			elif self.IV_Changed_DNA_CDS_Seq == "":
-				For_Type_Safety_and_statics.log.append("No Changed_DNA_CDS_Seq, but CDS without changes exist: " + str(self.TID) + "\n")
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No Changed_DNA_CDS_Seq, but CDS without changes exist: " + str(self.TID) + "\n")
+				#For_Type_Safety_and_statics.log.append("No Changed_DNA_CDS_Seq, but CDS without changes exist: " + str(self.TID) + "\n")
 				return False
 			else:
-				print("No direction?: " + str(self.TID))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No direction?: " + str(self.TID)+ "\n")
+				#print("No direction?: " + str(self.TID))
 				return False
 
 	def Create_IV_Changed_DNA_CDS_Seq (self, genetic_code: dict, IntegratedVariantObjects: list, stopcodon: str):
@@ -286,7 +292,8 @@ class Transcript:
 				alt = vinfo.ReverseAlt
 				ref = vinfo.ReverseRef
 			else:
-				print("Transcript without Direction: " + str(self.TID))
+				LogOrganizer.addToLog(LogOrganizer.writeLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Transcript without Direction: " + str(self.TID) + "\n"))
+				#print("Transcript without Direction: " + str(self.TID))
 				continue
 			cds_position = vinfo.Unchanged_CDS_Position
 			current_additional_position = self.IV_NewPositionList[len(self.IV_NewPositionList)-1]
@@ -304,8 +311,10 @@ class Transcript:
 
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
 				if test != ref:
-					print("Error 1: SUB not identical with Ref: " + str(self.TID) + " " + str(vinfo.ChrPosition))
-
+					LogOrganizer.addToLog(LogOrganizer.writeLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+																"Error 1: SUB not identical with Ref: " + str(
+																	self.TID) + " " + str(vinfo.ChrPosition) + "\n"))
+					#print("Error 1: SUB not identical with Ref: " + str(self.TID) + " " + str(vinfo.ChrPosition))
 				substitution = alt
 				second = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position:]
 				self.IV_Changed_DNA_CDS_Seq = first + substitution + second
@@ -316,14 +325,15 @@ class Transcript:
 				dellength = (len(ref)-1)
 
 				if self.ForwardDirection == TranscriptEnum.REVERSE:
-					asdasdasdasdasdasdasd = cds_position + current_additional_position + dellength
 					if cds_position + current_additional_position + dellength <= 3 \
 							and cds_position + current_additional_position + dellength  > 0:
 						first = self.IV_Changed_DNA_CDS_Seq[0:cds_position + current_additional_position -1 ]
-						print("Note 1: DEL removed start: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
+						LogOrganizer.addToLog(LogEnums.TRANSCRIPT_ADDITIONAL_INFO_LOG, "Note 1: DEL removed start: " + str(self.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+						#print("Note 1: DEL removed start: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
 						vinfo.Classification.append(TranscriptEnum.START_LOST)
 					elif cds_position + current_additional_position + dellength <= 0:
-						print("Note 1.1: DEL destroyed start exon: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
+						LogOrganizer.addToLog(LogEnums.TRANSCRIPT_ADDITIONAL_INFO_LOG,"Note 1.1: DEL destroyed start exon: " + str(self.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+						#print("Note 1.1: DEL destroyed start exon: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
 						vinfo.Classification.append(TranscriptEnum.CDS_START_INVOLVED)
 						first = ""
 					else:
@@ -331,7 +341,8 @@ class Transcript:
 
 					second = self.IV_Changed_DNA_CDS_Seq[cds_position + dellength + current_additional_position -1:]
 					if second[0] != ref[len(ref) - 1]:
-						print("Error 2: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition))
+						LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,"Error 2: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition) + "\n" )
+						#print("Error 2: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition))
 
 				else:
 					first = self.IV_Changed_DNA_CDS_Seq[0:cds_position + current_additional_position]
@@ -339,15 +350,14 @@ class Transcript:
 					second = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position + dellength:]
 					if first != "":
 						if first[len(first) - 1] != ref[0]:
-							print("Error 3: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition))
+							LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error 3: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition) + "\n")
+							#print("Error 3: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition))
 
 				self.IV_Changed_DNA_CDS_Seq = first + second
 				self.IV_NewPositionList.append(current_additional_position - (-1 + len(ref)))
 				vinfo.Classification.append(TranscriptEnum.DELETION)
 			elif len(ref) == 1 and len(alt) > 1: #insert
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
-				if test != ref:
-					print("why3" + str(self.TID) + str(vinfo.ChrPosition))
 				first = self.IV_Changed_DNA_CDS_Seq[0:cds_position + current_additional_position - 1]
 				insert = alt
 				second = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position:]
@@ -356,7 +366,8 @@ class Transcript:
 
 				self.IV_NewPositionList.append(current_additional_position + (-1 + len(alt)))
 			else:
-				print("Create_IV_IV_Changed_DNA_CDS_Seq - error?")
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Create_IV_IV_Changed_DNA_CDS_Seq - error?"+ str(self.TID) + str(vinfo.ChrPosition) + "\n")
+				#print("Create_IV_IV_Changed_DNA_CDS_Seq - error?"+ str(self.TID) + str(vinfo.ChrPosition) + "\n")
 				self.IV_NewPositionList.append(current_additional_position)
 				continue
 		###
@@ -407,9 +418,12 @@ class Transcript:
 										or TranscriptEnum.AA_CHANGE in old_vinfo.Classification:
 									endeffect_without_stop = old_vinfo.Changed_CDS_Position + (2 - old_vinfo.Changed_Raster)
 								else:
-									print("Error: SetKeysToCombinedEffects:" + str(self.TID)+
+									LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error: SetKeysToCombinedEffects:" + str(self.TID)+
 										  "\t" + str(old_vinfo.ChrPosition) +
-										  "\t" + str(current_vinfo.ChrPosition))
+										  "\t" + str(current_vinfo.ChrPosition) + "\n")
+									#print("Error: SetKeysToCombinedEffects:" + str(self.TID)+
+									#	  "\t" + str(old_vinfo.ChrPosition) +
+									#	  "\t" + str(current_vinfo.ChrPosition) + "\n")
 									break
 								#if endeffect_without_stop >= current_vinfo.StartOfOwnEffect:
 								Marked = True
@@ -428,6 +442,7 @@ class Transcript:
 						current_vinfo.SharedEffectsWith.append(old_vinfo)
 						Marked = False
 				if in_the_end: # stop == nothing else matters
+					# Look 14 lines above, to reactivate this
 					if len(current_vinfo.SharedEffectsWith) > 0: # if there are more effects before the stop, they have to be removed
 						for vinfo_in_shared_effects in current_vinfo.SharedEffectsWith:
 							vinfo_in_shared_effects.SharedEffectsWith.remove(current_vinfo)
@@ -477,7 +492,8 @@ class Transcript:
 			Forward = False
 			current_CDS = self.Rev_CDS
 		else:
-			print ("Error: Direction: " + str(self.TID) +" " + str(chrPos))
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error: Direction: " + str(self.TID) +" " + str(chrPos) + "\n")
+			#print ("Error: Direction: " + str(self.TID) +" " + str(chrPos) + "\n")
 			return False
 
 		if TranscriptEnum.SUBSTITUTION in vinfo.Classification:
@@ -491,7 +507,8 @@ class Transcript:
 			elif OrigRaster == 2:
 				OrigTriplets = self.RasterTwo(current_CDS, vinfo)
 			else:
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				#print("(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(OrigRaster) + "\n")
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(OrigRaster) + "\n")
 				return False
 
 			if new_Raster == 0:
@@ -501,7 +518,10 @@ class Transcript:
 			elif new_Raster == 2:
 				ChangedTriplets = self.RasterTwoChanged(self.IV_Changed_DNA_CDS_Seq, vinfo)
 			else:
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				#print("Error: " + str(self.TID) + " " + str(chrPos))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(
+										  new_Raster) + "\n")
 				return False
 
 			if Forward:
@@ -559,7 +579,10 @@ class Transcript:
 				before = current_CDS[cdsPosition-3:cdsPosition]
 				next = ""
 			else:
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(
+										  OrigRaster) + "\n")
+				#print("Error: " + str(self.TID) + " " + str(chrPos))
 				return False
 
 
@@ -570,7 +593,10 @@ class Transcript:
 			elif new_Raster == 2:
 				before2 = self.IV_Changed_DNA_CDS_Seq[cdsPositionChanged-3:cdsPositionChanged-1]
 			else:
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(
+										  new_Raster) + "\n")
+				#print("Error: " + str(self.TID) + " " + str(chrPos))
 				return False
 
 			if new_Raster == 0 and RasterChange == 0:
@@ -592,7 +618,10 @@ class Transcript:
 			elif new_Raster == 2 and RasterChange == 2:
 				next2 = self.IV_Changed_DNA_CDS_Seq[cdsPositionChanged  + len(vinfo.Alt) - 1: cdsPositionChanged + 1 + len(vinfo.Alt) - 1]
 			else:
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(
+										  new_Raster) + " " + str(RasterChange) + "\n")
+				#print("Error: " + str(self.TID) + " " + str(chrPos))
 				return False
 
 			if Forward:
@@ -634,7 +663,10 @@ class Transcript:
 				before = current_CDS[cdsPosition - 3:cdsPosition-1]
 				next = ""
 			else:
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(
+										  OrigRaster)  + "\n")
+				#print("Error: " + str(self.TID) + " " + str(chrPos))
 				return False
 
 			if OrigRaster == 0 and RasterChange == 0:
@@ -656,7 +688,10 @@ class Transcript:
 			elif OrigRaster == 2 and RasterChange == 2:
 				next = current_CDS[cdsPosition + len(vinfo.Ref) - 1: cdsPosition + len(vinfo.Ref) - 1 + 1]
 			else:
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(
+										  OrigRaster) + " " + RasterChange + "\n")
+				#print("Error: " + str(self.TID) + " " + str(chrPos))
 				return False
 
 
@@ -675,7 +710,10 @@ class Transcript:
 				before2 = self.IV_Changed_DNA_CDS_Seq[cdsPositionChanged-3: cdsPositionChanged]
 				next2 = ""
 			else :
-				print("Error: " + str(self.TID) + " " + str(chrPos))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "(Impossible) Raster Error: " + str(self.TID) + " " + str(chrPos) + " " + str(
+										  new_Raster)  + "\n")
+				#print("Error: " + str(self.TID) + " " + str(chrPos))
 				return False
 
 			if Forward:
@@ -721,7 +759,7 @@ class Transcript:
 
 		if TranscriptEnum.STOP_GAINED in classification or TranscriptEnum.STOP_LOST in classification or TranscriptEnum.FRAMESHIFT in classification or TranscriptEnum.FRAMESHIFT_1 in classification or TranscriptEnum.FRAMESHIFT_2 in classification:
 			if TranscriptEnum.FRAMESHIFT in classification:
-				print ("Still FRAMESHIFT in use.")
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Still FRAMESHIFT in use." + "\n" )
 			endeffect = VariantEnum.NO_EndOfOwnEffect
 		elif TranscriptEnum.DELETION in classification:
 			endeffect = vinfo.Changed_CDS_Position + (2-vinfo.Changed_Raster)
@@ -730,7 +768,8 @@ class Transcript:
 		elif TranscriptEnum.SUBSTITUTION in classification or TranscriptEnum.AA_CHANGE in classification:
 			endeffect = vinfo.Changed_CDS_Position + (2-vinfo.Changed_Raster)
 		else:
-			print("Error in IV_Local_Effect_Length: " + str(self.TID) + " " + str(vinfo.ChrPosition))
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error in IV_Local_Effect_Length: " + str(self.TID) + " " + str(vinfo.ChrPosition) + "\n")
+			#print("Error in IV_Local_Effect_Length: " + str(self.TID) + " " + str(vinfo.ChrPosition))
 			return False
 
 
@@ -750,7 +789,8 @@ class Transcript:
 		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			self.LastCDSPosition = self.ListofCDS[0][0]
 		else:
-			print ("No Direction: " + str(self.TID))
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No Direction: " + str(self.TID) + "\n")
+			#print ("No Direction: " + str(self.TID))
 
 	def Find_New_Stop(self, nextDNA:str , genetic_code:dict , stopcodon: str):
 		"""
@@ -782,7 +822,8 @@ class Transcript:
 			dnaToTest = nextDNA
 			oldDNA = 0
 		else:
-			print ("Error in find_New_Stop: " + str(self.TID))
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
+			#print ("Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
 			return False
 
 		new_Amino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(dnaToTest), genetic_code)
@@ -902,7 +943,8 @@ class Transcript:
 				else:
 					vinfo.Classification.append(TranscriptEnum.CDS_EXON_TO_INTRON)
 			else:
-				print ("Error - IV_CDS_Damaging_Variant_Handler?,Forward: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,"Error - IV_CDS_Damaging_Variant_Handler?,Forward: " + str(self.TID) + "\t" + str(vinfo.ChrPosition) + "\n" )
+				#print ("Error - IV_CDS_Damaging_Variant_Handler?,Forward: " + str(self.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
 
 
 		else:
@@ -939,7 +981,8 @@ class Transcript:
 				else:
 					vinfo.Classification.append(TranscriptEnum.CDS_EXON_TO_INTRON)
 			else:
-				print ("Error - IV_CDS_Damaging_Variant_Handler?,Reverse: " + str(self.TID) + "\t" + str(vinfo.ChrPosition))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error - IV_CDS_Damaging_Variant_Handler?,Reverse: " + str(self.TID) + "\t" + str(vinfo.ChrPosition) +"\n")
+				#print ("Error - IV_CDS_Damaging_Variant_Handler?,Reverse: " + str(self.TID) + "\t" + str(vinfo.ChrPosition) +"\n")
 
 	def Add_Variant_Information (self, variant: Variant):
 		"""
@@ -1003,7 +1046,8 @@ class Transcript:
 		elif type(CDS_Position) == int :
 			self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
 		else:
-			print("Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(Variant.Position))
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n" )
+			#print("Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n")
 
 	def Remove_Mult_Allel_Entry_In_All_Variant_Information(self, zero_or_one: int):
 		"""
@@ -1027,7 +1071,8 @@ class Transcript:
 					self.TID = str(self.TID) + "A"
 					self.TID_locked = True
 				else:
-					print("Maybe bug in :Remove_Mult_Allel_Entry_In_All_Variant_Information with :" +self.TID)
+					LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Maybe bug in :Remove_Mult_Allel_Entry_In_All_Variant_Information with :" +self.TID + "\n")
+					#print("Maybe bug in :Remove_Mult_Allel_Entry_In_All_Variant_Information with :" +self.TID + "\n")
 
 	def addCDS(self, StartPosition: int, EndPosition: int, Raster: str):
 		"""
@@ -1100,7 +1145,7 @@ class Transcript:
 		for CDS in self.ListofCDS:
 			if (CDS[0] <= PositionInChr <= CDS[1]):
 				PositionInCDS = CDS_length + abs(PositionInChr - CDS[0])  +1
-				break; #break, when you found it
+				break #break, when you found it
 			else:
 				#+1, because... from position 5 to 10 are not 5 positions, it's 6: P:[5,6,7,8,9,10]
 				CDS_length += abs(CDS[1] - CDS[0]) +1#EndPosition - StartPosition = length
@@ -1110,13 +1155,13 @@ class Transcript:
 
 	def SearchPositionPairAroundTranscript(self, StartpositionInChr:int , EndpositionInChr:int):
 		"""
-		CDS are numbered from 0 up. The output of this funtcion is a tuple from -0.5 to the maximal CDS number +0.5 to
+		CDS are numbered from 0 up. The output of this funtcion is a list with two values from -0.5 to the maximal CDS number +0.5 to
 		prescind where the Positions are.
 		:param StartpositionInChr: The position of the variant.
 		:param EndpositionInChr: The position of the variant + length of deletion.
-		:return: Tuple of floats.
+		:return: List of two floats.
 		"""
-		result = (float(0.0),float(0.0))
+		result = [float(0.0),float(0.0)]
 		for i,CDS in enumerate(self.ListofCDS):
 			if StartpositionInChr < CDS[0]:
 				result[0] = float(i) - float(0.5)
@@ -1213,7 +1258,8 @@ class Transcript:
 		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			return self.SeqInRevCDS(StartPosChr, EndPosChr)
 		else:
-			print("Error: No Strand Direction: " + str(self.TID))
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,"Error: No Strand Direction: " + str(self.TID) + "\n" )
+			#print("Error: No Strand Direction: " + str(self.TID) + "\n")
 			return False
 
 	def Change_CDS_Existence (self, Does_it_Exist: bool):

@@ -74,12 +74,12 @@ def VCF_Check(vcf_path_amd_file: str, outpath:str):
 		if intlist[i-1][1] > pos:
 			if intlist[i - 1][0] == chr:
 				logdata = "Position: " + str(intlist[i-1]) + " has to be after position: " + str(intlist[i]) + "\n"
-				LogOrganizer.LogOrganizer.addToLog(LogOrganizer.LogEnums.VCF_Format_Check_log, logdata)
+				LogOrganizer.LogOrganizer.addToLog(LogOrganizer.LogEnums.VCF_FORMAT_CHECK_LOG, logdata)
 				compatible = False
 		if intlist[i-1][1] == pos:
 			if intlist[i-1][0] == chr:
 				logdata = "There is more than one entry in: " + str(pos) + " the program still (probably) works, but will only consider one entry.\n"
-				LogOrganizer.LogOrganizer.addToLog(LogOrganizer.LogEnums.VCF_Format_Check_log, logdata)
+				LogOrganizer.LogOrganizer.addToLog(LogOrganizer.LogEnums.VCF_FORMAT_CHECK_LOG, logdata)
 				compatible = False
 
 
@@ -90,7 +90,7 @@ def VCF_Check(vcf_path_amd_file: str, outpath:str):
 	else:
 		print("Looks like it is incompatible.")
 	vcf.close()
-	LogOrganizer.LogOrganizer.writeLog(LogOrganizer.LogEnums.VCF_Format_Check_log, outpath)
+	LogOrganizer.LogOrganizer.writeLog(LogOrganizer.LogEnums.VCF_FORMAT_CHECK_LOG, outpath)
 
 
 
