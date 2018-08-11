@@ -1215,7 +1215,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				if stopcodon in currentTranscript.IV_ChangedTranslation:
 					# print("new stopcodon already inside transcript" + str(transcriptHier.TID))
 
-					LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"New Stopcodon is in " + str(currentTranscript.TID) + "\n")
+					#LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"New Stopcodon is in " + str(currentTranscript.TID) + "\n")
 					lastPosInCDS = currentTranscript.LastCDSPosition
 					currentTranscript.Lost_Stop = False
 					currentTranscript.Found_New_Stop = True
@@ -1226,9 +1226,9 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					nextDNA = ghandler.seq(name, lastPosInCDS + 1, lastPosInCDS + 101)
 				elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
 					nextDNA = ghandler.seq(name, lastPosInCDS - 101, lastPosInCDS - 1)
-					nextDNA = nextDNA[::-1] #reverse, because it will be added to the already reversed dna transcript
+					#nextDNA = For_Type_Safety_and_statics.ReverseSeq(nextDNA) #reverse, because it will be added to the already reversed dna transcript
 				else:
-					print("Error: No Direction: " + str(currentTranscript.TID))
+					LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Error: No Direction: " + str(currentTranscript.TID)+"\n")
 					break
 				currentTranscript.Find_New_Stop(nextDNA, genetic_code, stopcodon)
 

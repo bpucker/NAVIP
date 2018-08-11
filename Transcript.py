@@ -292,7 +292,7 @@ class Transcript:
 				alt = vinfo.ReverseAlt
 				ref = vinfo.ReverseRef
 			else:
-				LogOrganizer.addToLog(LogOrganizer.writeLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Transcript without Direction: " + str(self.TID) + "\n"))
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Transcript without Direction: " + str(self.TID) + "\n")
 				#print("Transcript without Direction: " + str(self.TID))
 				continue
 			cds_position = vinfo.Unchanged_CDS_Position
@@ -311,9 +311,9 @@ class Transcript:
 
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
 				if test != ref:
-					LogOrganizer.addToLog(LogOrganizer.writeLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+					LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
 																"Error 1: SUB not identical with Ref: " + str(
-																	self.TID) + " " + str(vinfo.ChrPosition) + "\n"))
+																	self.TID) + " " + str(vinfo.ChrPosition) + "\n")
 					#print("Error 1: SUB not identical with Ref: " + str(self.TID) + " " + str(vinfo.ChrPosition))
 				substitution = alt
 				second = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position:]
@@ -792,6 +792,18 @@ class Transcript:
 			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No Direction: " + str(self.TID) + "\n")
 			#print ("No Direction: " + str(self.TID))
 
+	def update_Last_CDS_Position(self):
+		"""
+		Updates the CDS Position inside the ListofCDS list.
+		:return: Nothing.
+		"""
+		if self.ForwardDirection == TranscriptEnum.FORWARD:
+			self.ListofCDS[len(self.ListofCDS)-1][1] = self.LastCDSPosition
+		elif self.ForwardDirection == TranscriptEnum.REVERSE:
+			self.ListofCDS[0][0] = self.LastCDSPosition
+		else:
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No Direction: " + str(self.TID) + "\n")
+
 	def Find_New_Stop(self, nextDNA:str , genetic_code:dict , stopcodon: str):
 		"""
 		Uses the IV_Changed_DNA_CDS_Seq and add the nextDNA, translates it and search for a new stopcodon.
@@ -835,15 +847,31 @@ class Transcript:
 			# its alsways the start position -> Position 5 in amino == Stop is in dna_position 15,16,17
 			###
 
-			self.IV_Changed_DNA_CDS_Seq += nextDNA[0:(1+position_in_string)*3 - oldDNA]
-			self.IV_Check_For_New_Variants(genetic_code, stopcodon)
 			self.Lost_Stop = False
 			self.Found_New_Stop = True # maybe i can use this later
-			self.LastCDSPosition += (1+position_in_string)*3 -oldDNA
-		else:
-			self.IV_Changed_DNA_CDS_Seq += nextDNA
+			if self.ForwardDirection == TranscriptEnum.FORWARD:
+				self.IV_Changed_DNA_CDS_Seq += nextDNA[0:(1 + position_in_string) * 3 - oldDNA]
+				self.LastCDSPosition += (1+position_in_string)*3 -oldDNA
+				self.Complete_CDS += nextDNA[0:(1+position_in_string)*3 - oldDNA]
+				self.Rev_CDS += For_Type_Safety_and_statics.ReverseSeq(nextDNA[0:(1 + position_in_string) * 3 - oldDNA])
+			else:
+				revdna = For_Type_Safety_and_statics.ReverseSeq(nextDNA[0:(1 + position_in_string) * 3 - oldDNA])
+				self.IV_Changed_DNA_CDS_Seq += revdna
+				self.Rev_CDS += revdna
+				self.Complete_CDS += nextDNA[0:(1 + position_in_string) * 3 - oldDNA]
+				self.LastCDSPosition -= (1 + position_in_string) * 3 - oldDNA
 			self.IV_Check_For_New_Variants(genetic_code, stopcodon)
-			self.LastCDSPosition += len(nextDNA)
+		else:
+
+			self.Rev_CDS += For_Type_Safety_and_statics.ReverseSeq(nextDNA)
+			self.Complete_CDS += nextDNA
+			#self.IV_Check_For_New_Variants(genetic_code, stopcodon)
+			if self.ForwardDirection == TranscriptEnum.FORWARD:
+				self.LastCDSPosition += len(nextDNA)
+				self.IV_Changed_DNA_CDS_Seq += nextDNA
+			else:
+				self.LastCDSPosition -= len(nextDNA)
+				self.IV_Changed_DNA_CDS_Seq += For_Type_Safety_and_statics.ReverseSeq(nextDNA)
 			return False
 
 	def IV_Check_For_New_Variants(self, genetic_code: dict, stopcodon:str):
@@ -860,36 +888,43 @@ class Transcript:
 		# or the last entry can be used for this
 		#
 		###
+		self.update_Last_CDS_Position()
 		for vinfo in self.IntegratedVariantObjects_NotCDS:
 			vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
-			if self.SearchPositionInCDS(vinfo.ChrPosition) == TranscriptEnum.POSITION_NOT_IN_CDS:
-				continue
-			else:
-				variant = Variant("not needed here",
-								  vinfo.ChrPosition,
-								  vinfo.ID,
-								  -1,
-								  vinfo.Ref,
-								  vinfo.Alt,
-								  vinfo.Qual,
-								  vinfo.Filter,
-								  vinfo.OLD_Info)
-				self.Add_Variant_Information(variant)
-				self.IntegratedVariantObjects_NotCDS.remove(vinfo)
-				"""
-				chromosome: str,
-				  position: int,
-				  ID: int, #from vcf-file
-				  usefullID: int, #not from vcf-file (count variants)
-				  reference: str,
-				  alternate: str,
-				  qual: str,
-				  filter_: str,
-				  info: str) :
-				"""
+			if self.ForwardDirection == TranscriptEnum.FORWARD:
+				if self.SearchPositionInCDS(vinfo.ChrPosition) == TranscriptEnum.POSITION_NOT_IN_CDS:
+					continue
+			elif self.ForwardDirection == TranscriptEnum.REVERSE:
+				if self.SearchPositionInCDSReverse(vinfo.ChrPosition) == TranscriptEnum.POSITION_NOT_IN_CDS:
+					continue
+			variant = Variant("not needed here",
+							  vinfo.ChrPosition,
+							  vinfo.ID,
+							  -1,
+							  vinfo.Ref,
+							  vinfo.Alt,
+							  vinfo.Qual,
+							  vinfo.Filter,
+							  vinfo.OLD_Info)
+			self.IntegratedVariantObjects_NotCDS.remove(vinfo)
+			newEntry = self.Add_Variant_Information(variant)
+			self.Create_IV_Changed_DNA_CDS_Seq(genetic_code,[newEntry], stopcodon )
 
 
-		print("At the Moment, there is no check if the new, longer cds does have more active variants inside it: " + str(self.TID))
+			"""
+			chromosome: str,
+			  position: int,
+			  ID: int, #from vcf-file
+			  usefullID: int, #not from vcf-file (count variants)
+			  reference: str,
+			  alternate: str,
+			  qual: str,
+			  filter_: str,
+			  info: str) :
+			"""
+
+
+		#print("At the Moment, there is no check if the new, longer cds does have more active variants inside it: " + str(self.TID))
 
 	def IV_CDS_Damaging_Variant_Handler(self, vinfo: Variant_Information_Storage):
 		"""
@@ -996,7 +1031,7 @@ class Transcript:
 				-> list for variants, inside cds
 				-> list for variants, outside the cds
 		:param variant: VCF_Variant class object, which starting position is between the rna start <-> end (+ range)
-		:return: Nothing.
+		:return: Variant_Information_Storage.
 		"""
 
 
@@ -1045,6 +1080,7 @@ class Transcript:
 			self.IntegratedVariantObjects_NotCDS.append(newEntry)
 		elif type(CDS_Position) == int :
 			self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
+			return newEntry
 		else:
 			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n" )
 			#print("Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n")
@@ -1208,7 +1244,6 @@ class Transcript:
 		:param EndPosChr: Position inside the chromosome.
 		:return: The CDS position or START_NOT_IN_CDS/END_NOT_IN_CDS enums.
 		"""
-
 		StartInCDS = self.SearchPositionInCDS(StartPosChr)
 		EndInCDS = self.SearchPositionInCDS(EndPosChr)
 

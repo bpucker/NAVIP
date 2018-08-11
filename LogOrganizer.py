@@ -29,12 +29,6 @@ class LogOrganizer:
 			LogOrganizer.log[str(LogName.value)] = [text]
 
 	@staticmethod
-	def writeLog(LogName: LogEnums, outpath:str):
-		logdata = open(str(outpath)+str(LogName.value)+".log","w")
-		logdata.write("".join(LogOrganizer.log[str(LogName.value)]))
-		logdata.close()
-
-	@staticmethod
 	def writeAllLogs(outpath:str):
 		for key in LogOrganizer.log.keys():
 			logdata = open(str(outpath)+str(key)+".log","w")

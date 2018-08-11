@@ -90,7 +90,7 @@ def VCF_Check(vcf_path_amd_file: str, outpath:str):
 	else:
 		print("Looks like it is incompatible.")
 	vcf.close()
-	LogOrganizer.LogOrganizer.writeLog(LogOrganizer.LogEnums.VCF_FORMAT_CHECK_LOG, outpath)
+	LogOrganizer.LogOrganizer.writeAllLogs(outpath)
 
 
 
