@@ -90,8 +90,8 @@ if __name__ == '__main__':
     #           "--innavipfasta /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/all_transcripts_data.fa " \
     #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/sfa/"
 
-    jenstest= "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf --ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 --infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch2/"
-    sys.argv = jenstest.split(" ")
+    #jenstest= "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf --ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 --infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch2/"
+    #sys.argv = jenstest.split(" ")
 
     if "--mode" in sys.argv:
         args = sys.argv
