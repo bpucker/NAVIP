@@ -49,6 +49,10 @@ class VCF_HANDLER:
 
 				if (lines.split("\t")[0] == ChromosomFlag) :
 					Now = lines.split('\t')
+					if len(Now) >8:
+						infoline = "\t".join(Now[7:])
+					else :
+						infoline = Now[7]
 					CurrentList.append(Now)
 					varianti = VCF_Variant.Variant(
 											  Now[0],		# Chr
@@ -59,7 +63,7 @@ class VCF_HANDLER:
 											  Now[4],		#Alternate
 											  Now[5],		#Qual
 											  Now[6],		#Filter
-											  Now[7]		#Info
+										 	  infoline		#Info
 											  )
 
 					CurrentVariantList.append(varianti)
