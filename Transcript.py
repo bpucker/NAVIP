@@ -391,7 +391,6 @@ class Transcript:
 		:return: Nothing.
 		"""
 
-
 		if len(IntegratedVariantObjects) > 0:
 
 			vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(IntegratedVariantObjects[0])
@@ -403,6 +402,9 @@ class Transcript:
 			in_the_end = False
 			for i in range(1, len(IntegratedVariantObjects)):
 				current_vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(IntegratedVariantObjects[i])
+				if current_vinfo.ChrPosition == 201069:
+					print("happy bugsearching: 201069")
+				listed_for_deletion = []
 				for old_vinfo in listWithVariants:
 					if old_vinfo.StartOfOwnEffect == current_vinfo.StartOfOwnEffect:
 						Marked = True
@@ -436,11 +438,17 @@ class Transcript:
 					elif old_vinfo.EndOfOwnEffect >= current_vinfo.StartOfOwnEffect:
 						Marked = True
 					else:
-						listWithVariants.remove(old_vinfo)
+						listed_for_deletion.append(old_vinfo)
+						#listWithVariants.remove(old_vinfo)
 					if Marked:
 						old_vinfo.SharedEffectsWith.append(current_vinfo)
 						current_vinfo.SharedEffectsWith.append(old_vinfo)
 						Marked = False
+				if len(listed_for_deletion) > 0:
+					for deleteit in listed_for_deletion:
+						if deleteit == []:
+							pass
+						listWithVariants.remove(deleteit)
 				if in_the_end: # stop == nothing else matters
 					# Look 14 lines above, to reactivate this
 					if len(current_vinfo.SharedEffectsWith) > 0: # if there are more effects before the stop, they have to be removed

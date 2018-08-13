@@ -93,6 +93,12 @@ if __name__ == '__main__':
     #jenstest= "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf --ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 --infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch2/"
     #sys.argv = jenstest.split(" ")
 
+    janstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakeVCFdata.vcf " \
+               "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegff.gff " \
+               "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegenomdata.fa " \
+               "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/"
+    sys.argv = janstest.split()
+
     if "--mode" in sys.argv:
         args = sys.argv
         if args[args.index("--mode")+1] == "pre" \
