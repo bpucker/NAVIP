@@ -895,6 +895,17 @@ class Transcript:
 				self.IV_Changed_DNA_CDS_Seq += For_Type_Safety_and_statics.ReverseSeq(nextDNA)
 			return False
 
+	def normalizeVariantClassification(self):
+		for variant in self.IntegratedVariantObjects_CDS_Hits:
+			variant = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(variant)
+			normalClassification = []
+			for classification in variant.Classification:
+				if classification in normalClassification:
+					continue
+				else:
+					normalClassification.append(classification)
+			variant.Classification = normalClassification
+
 	def resetTranscript(self):
 		self.IV_Changed_DNA_CDS_Seq = ""
 		self.IV_Ready = False
@@ -939,6 +950,7 @@ class Transcript:
 			self.Add_Variant_Information(variant)
 		self.resetTranscript()
 		self.Create_IV_Changed_DNA_CDS_Seq(genetic_code,self.IntegratedVariantObjects_CDS_Hits, stopcodon )
+		self.normalizeVariantClassification()
 		"""
 		chromosome: str,
 		  position: int,
@@ -1076,6 +1088,7 @@ class Transcript:
 
 		else: # self.ForwardDirection == TranscriptEnum.REVERSE:
 			CDS_Position = self.SearchPositionInCDSReverse(variant.Position)
+
 			if len(variant.Reference) > 1:  # DEL
 				CDS_Position = self.SearchPositionInCDSReverse(variant.Position + (len(variant.Reference) - 1))
 				cds_2 = self.SearchPositionInCDSReverse(variant.Position)
@@ -1203,6 +1216,10 @@ class Transcript:
 		"""
 		PositionInCDS = TranscriptEnum.POSITION_NOT_IN_CDS
 		CDS_length = 0
+
+		if len(self.ListofCDS) == 0 or PositionInChr < self.ListofCDS[0][0] or PositionInChr > self.ListofCDS[len(self.ListofCDS)-1][1]:
+			return PositionInCDS
+
 		for CDS in self.ListofCDS:
 			if (CDS[0] <= PositionInChr <= CDS[1]):
 				PositionInCDS = CDS_length + abs(PositionInChr - CDS[0])  +1
@@ -1248,6 +1265,10 @@ class Transcript:
 		"""
 		PositionInCDS = TranscriptEnum.POSITION_NOT_IN_CDS
 		CDS_length = 0
+
+		if len(self.ListofCDS) == 0 or PositionInChr < self.ListofCDS[0][0] or PositionInChr > self.ListofCDS[len(self.ListofCDS)-1][1]:
+			return PositionInCDS
+
 		for CDS in self.ListofCDS[::-1]:
 			#CDS[0] == Start of CDS
 			#CDS[1] == End of CDS
