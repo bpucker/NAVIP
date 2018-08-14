@@ -31,6 +31,7 @@ class TranscriptEnum (Enum):
 	FRAMESHIFT_2_DEL = "Frameshift-2"
 	STOP_GAINED = "Stop gained"
 	STOP_LOST = "Stop lost"
+	STOP_CHANGED = "Stop changed"
 	AA_CHANGE = "Amino acid change"
 	START_LOST = "Start lost"
 
@@ -256,9 +257,6 @@ class Transcript:
 				#print("No direction?: " + str(self.TID))
 				return False
 
-	def reste_and_create_new_IV_Changed_DNA_CDS_Seq(self,genetic_code: dict, IntegratedVariantObjects: list, stopcodon: str):
-		pass
-
 	def Create_IV_Changed_DNA_CDS_Seq (self, genetic_code: dict, IntegratedVariantObjects: list, stopcodon: str):
 		"""
 		First Step:
@@ -282,6 +280,7 @@ class Transcript:
 		elif self.ForwardDirection == TranscriptEnum.REVERSE and not self.IV_Ready:
 			self.IV_Changed_DNA_CDS_Seq = self.Rev_CDS
 			self.IV_Ready = True
+
 
 		IntegratedVariantObjects = sorted(IntegratedVariantObjects, key = lambda variant_information: variant_information.Unchanged_CDS_Position)
 		# list needs to be ordered after position, so the new cds position can be calculated.
@@ -751,6 +750,19 @@ class Transcript:
 			self.Calculate_Last_CDS_Position()
 		elif stopcodon in newAmino and not stopcodon in origAmino:
 			vinfo.Classification.append(TranscriptEnum.STOP_GAINED)
+		elif stopcodon in newAmino and stopcodon in origAmino:
+			if len(newAmino) == len(origAmino):
+				vinfo.Classification.append(TranscriptEnum.STOP_CHANGED)
+			elif TranscriptEnum.SUBSTITUTION in vinfo.Classification:
+				vinfo.Classification.append(TranscriptEnum.STOP_CHANGED)
+			elif TranscriptEnum.DELETION in vinfo.Classification:
+				vinfo.Classification.append(TranscriptEnum.STOP_CHANGED)
+			elif TranscriptEnum.INSERTION in vinfo.Classification:
+				if vinfo.NewAmino[0] == stopcodon:
+					vinfo.Classification.append(TranscriptEnum.STOP_CHANGED)
+				else:
+					vinfo.Classification.append(TranscriptEnum.STOP_LOST)
+					vinfo.Classification.append(TranscriptEnum.STOP_GAINED)
 		elif origAmino != newAmino:
 			vinfo.Classification.append(TranscriptEnum.AA_CHANGE)
 
@@ -883,6 +895,14 @@ class Transcript:
 				self.IV_Changed_DNA_CDS_Seq += For_Type_Safety_and_statics.ReverseSeq(nextDNA)
 			return False
 
+	def resetTranscript(self):
+		self.IV_Changed_DNA_CDS_Seq = ""
+		self.IV_Ready = False
+		self.IV_NewPositionList = [0]
+		self.IV_OriginalTranslation = ""
+		self.IV_ChangedTranslation = ""
+		self.IV_Count_Stops_in_New_AA = -1
+
 	def IV_Check_For_New_Variants(self, genetic_code: dict, stopcodon:str):
 		"""
 		Prototype function: It is more a reminder, that it is possible for longer transcripts, to have more variants.
@@ -916,24 +936,20 @@ class Transcript:
 							  vinfo.Filter,
 							  vinfo.OLD_Info)
 			self.IntegratedVariantObjects_NotCDS.remove(vinfo)
-			newEntry = self.Add_Variant_Information(variant)
-			self.Create_IV_Changed_DNA_CDS_Seq(genetic_code,[newEntry], stopcodon )
-
-
-			"""
-			chromosome: str,
-			  position: int,
-			  ID: int, #from vcf-file
-			  usefullID: int, #not from vcf-file (count variants)
-			  reference: str,
-			  alternate: str,
-			  qual: str,
-			  filter_: str,
-			  info: str) :
-			"""
-
-
-		#print("At the Moment, there is no check if the new, longer cds does have more active variants inside it: " + str(self.TID))
+			self.Add_Variant_Information(variant)
+		self.resetTranscript()
+		self.Create_IV_Changed_DNA_CDS_Seq(genetic_code,self.IntegratedVariantObjects_CDS_Hits, stopcodon )
+		"""
+		chromosome: str,
+		  position: int,
+		  ID: int, #from vcf-file
+		  usefullID: int, #not from vcf-file (count variants)
+		  reference: str,
+		  alternate: str,
+		  qual: str,
+		  filter_: str,
+		  info: str) :
+		"""
 
 	def IV_CDS_Damaging_Variant_Handler(self, vinfo: Variant_Information_Storage):
 		"""
