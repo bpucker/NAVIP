@@ -256,6 +256,9 @@ class Transcript:
 				#print("No direction?: " + str(self.TID))
 				return False
 
+	def reste_and_create_new_IV_Changed_DNA_CDS_Seq(self,genetic_code: dict, IntegratedVariantObjects: list, stopcodon: str):
+		pass
+
 	def Create_IV_Changed_DNA_CDS_Seq (self, genetic_code: dict, IntegratedVariantObjects: list, stopcodon: str):
 		"""
 		First Step:
@@ -402,8 +405,6 @@ class Transcript:
 			in_the_end = False
 			for i in range(1, len(IntegratedVariantObjects)):
 				current_vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(IntegratedVariantObjects[i])
-				if current_vinfo.ChrPosition == 201069:
-					print("happy bugsearching: 201069")
 				listed_for_deletion = []
 				for old_vinfo in listWithVariants:
 					if old_vinfo.StartOfOwnEffect == current_vinfo.StartOfOwnEffect:
