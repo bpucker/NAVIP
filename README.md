@@ -1,2 +1,2 @@
 # NAVIP
-Neighborhood-Aware Variant Predictor
+Neighborhood-Aware Variant Impact Predictor
