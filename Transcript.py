@@ -69,8 +69,8 @@ class Variant_Information_Storage:
 		self.Filter = filter
 		self.OLD_Info = info
 
-		self.ReverseRef = For_Type_Safety_and_statics.ReverseSeq(Ref)
-		self.ReverseAlt = For_Type_Safety_and_statics.ReverseSeq(Alt)
+		self.ReverseRef = For_Type_Safety_and_statics.BioReverseSeq(Ref)
+		self.ReverseAlt = For_Type_Safety_and_statics.BioReverseSeq(Alt)
 		if self.Unchanged_CDS_Position != TranscriptEnum.POSITION_NOT_IN_CDS:
 			self.OrigRaster = For_Type_Safety_and_statics.calculateRaster(self.Unchanged_CDS_Position)
 		else:
@@ -88,6 +88,13 @@ class Variant_Information_Storage:
 		self.NewAmino = ""
 
 		self.SharedEffectsWith = []
+
+	def SetUnchanged_CDS_Position(self, Unchanged_CDS_Position:int):
+		self.Unchanged_CDS_Position = Unchanged_CDS_Position
+		if self.Unchanged_CDS_Position != TranscriptEnum.POSITION_NOT_IN_CDS:
+			self.OrigRaster = For_Type_Safety_and_statics.calculateRaster(self.Unchanged_CDS_Position)
+		else:
+			self.OrigRaster = self.Unchanged_CDS_Position
 
 	def SetChanged_CDS_Position(self, Changed_CDS_Position: int):
 		"""
@@ -151,6 +158,7 @@ class Transcript:
 		self.IV_OriginalTranslation = ""
 		self.IV_ChangedTranslation = ""
 		self.IV_Count_Stops_in_New_AA = -1
+		self.IV_ListOfEffects = []
 
 		# state's of transcript
 		self.TID_locked = False  # for changing TID because of more than one multi_allel_variants
@@ -201,6 +209,32 @@ class Transcript:
 		"""
 		self.EXON_Descriptin.append(EXON_Descriptin)
 
+	def change_Last_CDS_Position(self, length: int):
+		"""
+		Updates the CDS Position inside the ListofCDS list.
+		Positive values: Longer CDS
+		Negative values: smaller CDS
+		:return: Nothing.
+		"""
+		if self.ForwardDirection == TranscriptEnum.FORWARD:
+			if length < 0:
+				currentLastCDSLength = abs(self.ListofCDS[len(self.ListofCDS)-1][0] - self.ListofCDS[len(self.ListofCDS)-1][1])
+				while currentLastCDSLength < abs(length):
+					del(self.ListofCDS[len(self.ListofCDS)-1])
+					length = -abs(currentLastCDSLength + length)
+					currentLastCDSLength = abs(self.ListofCDS[len(self.ListofCDS) - 1][0] - self.ListofCDS[len(self.ListofCDS) - 1][1])
+			self.ListofCDS[len(self.ListofCDS)-1][1] = self.LastCDSPosition + length
+		elif self.ForwardDirection == TranscriptEnum.REVERSE:
+			if length < 0:
+				currentLastCDSLength = (abs(self.ListofCDS[0][0] - self.ListofCDS[0][1]))
+				while currentLastCDSLength < abs(length):
+					del(self.ListofCDS[0])
+					length = -abs(currentLastCDSLength + length)
+					currentLastCDSLength = (abs(self.ListofCDS[0][0] - self.ListofCDS[0][1]))
+			self.ListofCDS[0][0] = self.LastCDSPosition - length
+		else:
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No Direction: " + str(self.TID) + "\n")
+
 	def Create_IV_OriginalTranslation(self, genetic_code:dict) -> bool:
 		"""
 		Create the AminoAcid sequence from the original dna source without any variant effects.
@@ -237,10 +271,10 @@ class Transcript:
 		"""
 
 
-		if self.ForwardDirection == TranscriptEnum.FORWARD and self.IV_Changed_DNA_CDS_Seq != "":
+		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			self.IV_ChangedTranslation = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(self.IV_Changed_DNA_CDS_Seq), genetic_code)
 			return True
-		elif self.ForwardDirection == TranscriptEnum.REVERSE and self.IV_Changed_DNA_CDS_Seq != "":
+		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			self.IV_ChangedTranslation = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(self.IV_Changed_DNA_CDS_Seq), genetic_code)
 			return True
 		else:
@@ -274,12 +308,10 @@ class Transcript:
 		:param stopcodon: Which letter stands for the stop codon.
 		:return: Nothing.
 		"""
-		if self.ForwardDirection == TranscriptEnum.FORWARD and not self.IV_Ready:
+		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			self.IV_Changed_DNA_CDS_Seq = self.Complete_CDS
-			self.IV_Ready = True
-		elif self.ForwardDirection == TranscriptEnum.REVERSE and not self.IV_Ready:
+		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			self.IV_Changed_DNA_CDS_Seq = self.Rev_CDS
-			self.IV_Ready = True
 
 
 		IntegratedVariantObjects = sorted(IntegratedVariantObjects, key = lambda variant_information: variant_information.Unchanged_CDS_Position)
@@ -310,7 +342,6 @@ class Transcript:
 					first = self.IV_Changed_DNA_CDS_Seq[0:firstkoord]
 				else:
 					first = ""
-
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
 				if test != ref:
 					LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
@@ -323,6 +354,7 @@ class Transcript:
 				vinfo.Classification.append(TranscriptEnum.SUBSTITUTION)
 
 				self.IV_NewPositionList.append(current_additional_position)
+				self.IV_ListOfEffects.append((vinfo.ChrPosition, vinfo.Unchanged_CDS_Position,current_additional_position))
 			elif len(ref) > 1 and len(alt) == 1: # del
 				dellength = (len(ref)-1)
 
@@ -357,6 +389,7 @@ class Transcript:
 
 				self.IV_Changed_DNA_CDS_Seq = first + second
 				self.IV_NewPositionList.append(current_additional_position - (-1 + len(ref)))
+				self.IV_ListOfEffects.append((vinfo.ChrPosition, vinfo.Unchanged_CDS_Position,current_additional_position - (-1 + len(ref))))
 				vinfo.Classification.append(TranscriptEnum.DELETION)
 			elif len(ref) == 1 and len(alt) > 1: #insert
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
@@ -367,10 +400,12 @@ class Transcript:
 				vinfo.Classification.append(TranscriptEnum.INSERTION)
 
 				self.IV_NewPositionList.append(current_additional_position + (-1 + len(alt)))
+				self.IV_ListOfEffects.append((vinfo.ChrPosition, vinfo.Unchanged_CDS_Position,current_additional_position + (-1 + len(alt))))
 			else:
 				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Create_IV_IV_Changed_DNA_CDS_Seq - error?"+ str(self.TID) + str(vinfo.ChrPosition) + "\n")
 				#print("Create_IV_IV_Changed_DNA_CDS_Seq - error?"+ str(self.TID) + str(vinfo.ChrPosition) + "\n")
 				self.IV_NewPositionList.append(current_additional_position)
+				self.IV_ListOfEffects.append((vinfo.ChrPosition, vinfo.Unchanged_CDS_Position,current_additional_position))
 				continue
 		###
 		# after every mutation is inside the new cds:
@@ -472,6 +507,42 @@ class Transcript:
 	def RasterTwoChanged (self, dna:str, vinfo):
 		return dna[vinfo.Changed_CDS_Position-3:vinfo.Changed_CDS_Position]
 
+	def prematureStopCodon(self, stopcodon):
+		stopStartPositionInChangedCDS = 1 + (self.IV_ChangedTranslation.find(stopcodon)) * 3
+		stopEndPositionInChangedCDS = 1 + (1+self.IV_ChangedTranslation.find(stopcodon)) * 3
+		lastPossibleChrPosition = 0
+
+		for tripple in self.IV_ListOfEffects:
+			chrPos = tripple[0]
+			cdsPos = tripple[1]
+			change = tripple[2]
+			if cdsPos + change <= stopStartPositionInChangedCDS:
+				lastPossibleChrPosition = chrPos
+				continue
+			elif cdsPos + change <= stopEndPositionInChangedCDS:
+				lastPossibleChrPosition = chrPos
+				continue
+			else:
+				break
+
+		self.remiveOutsiderVariants(lastPossibleChrPosition)
+
+	def remiveOutsiderVariants(self,ChrPosition:int):
+		markedForDeletion = []
+		if self.ForwardDirection == TranscriptEnum.FORWARD:
+			for vinfo in self.IntegratedVariantObjects_CDS_Hits:
+				if vinfo.ChrPosition > ChrPosition:
+					markedForDeletion.append(vinfo)
+		else:
+			for vinfo in self.IntegratedVariantObjects_CDS_Hits:
+				if vinfo.ChrPosition < ChrPosition:
+					markedForDeletion.append(vinfo)
+
+		for vinfo in markedForDeletion:
+			self.IntegratedVariantObjects_CDS_Hits.remove(vinfo)
+			self.IntegratedVariantObjects_NotCDS.append(vinfo)
+
+
 	def IV_Local_Classification(self,vinfo: Variant_Information_Storage, genetic_code: dict, stopcodon: str):
 		"""
 		Adds (and calculates) following information to the Variant_Information_Storage object:
@@ -536,7 +607,7 @@ class Transcript:
 				vinfo.OrigTriplets = OrigTriplets
 				vinfo.OrigAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(OrigTriplets), genetic_code)
 			else:
-				vinfo.OrigTriplets = For_Type_Safety_and_statics.ReverseSeq(OrigTriplets)
+				vinfo.OrigTriplets = For_Type_Safety_and_statics.BioReverseSeq(OrigTriplets)
 				vinfo.OrigAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(OrigTriplets), genetic_code)
 				vinfo.OrigAmino = vinfo.OrigAmino[::-1]
 
@@ -544,7 +615,7 @@ class Transcript:
 				vinfo.ChangedTriplets = ChangedTriplets
 				vinfo.NewAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(ChangedTriplets), genetic_code)
 			else:
-				vinfo.ChangedTriplets = For_Type_Safety_and_statics.ReverseSeq(ChangedTriplets)
+				vinfo.ChangedTriplets = For_Type_Safety_and_statics.BioReverseSeq(ChangedTriplets)
 				vinfo.NewAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(ChangedTriplets), genetic_code)
 				vinfo.NewAmino = vinfo.NewAmino[::-1]
 
@@ -636,7 +707,7 @@ class Transcript:
 				vinfo.OrigTriplets = before + next
 				vinfo.OrigAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(vinfo.OrigTriplets), genetic_code)
 			else:
-				vinfo.OrigTriplets = For_Type_Safety_and_statics.ReverseSeq(before + next)
+				vinfo.OrigTriplets = For_Type_Safety_and_statics.BioReverseSeq(before + next)
 				vinfo.OrigAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(before + next), genetic_code)
 				vinfo.OrigAmino = vinfo.OrigAmino[::-1]
 
@@ -644,8 +715,8 @@ class Transcript:
 				vinfo.ChangedTriplets = before2 + vinfo.Alt + next2
 				vinfo.NewAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(vinfo.ChangedTriplets), genetic_code)
 			else:
-				vinfo.ChangedTriplets = For_Type_Safety_and_statics.ReverseSeq(before2 + For_Type_Safety_and_statics.ReverseSeq(vinfo.Alt) + next2)
-				vinfo.NewAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(before2 + For_Type_Safety_and_statics.ReverseSeq(vinfo.Alt) + next2), genetic_code)
+				vinfo.ChangedTriplets = For_Type_Safety_and_statics.BioReverseSeq(before2 + For_Type_Safety_and_statics.BioReverseSeq(vinfo.Alt) + next2)
+				vinfo.NewAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(before2 + For_Type_Safety_and_statics.BioReverseSeq(vinfo.Alt) + next2), genetic_code)
 				vinfo.NewAmino = vinfo.NewAmino[::-1]
 
 		elif TranscriptEnum.DELETION in vinfo.Classification:
@@ -728,21 +799,21 @@ class Transcript:
 				vinfo.OrigTriplets = before + vinfo.Ref +next
 				vinfo.OrigAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(vinfo.OrigTriplets), genetic_code)
 			else:
-				vinfo.OrigTriplets = For_Type_Safety_and_statics.ReverseSeq(before + For_Type_Safety_and_statics.ReverseSeq(vinfo.Ref) + next)
-				vinfo.OrigAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(before + For_Type_Safety_and_statics.ReverseSeq(vinfo.Ref) + next), genetic_code)
+				vinfo.OrigTriplets = For_Type_Safety_and_statics.BioReverseSeq(before + For_Type_Safety_and_statics.BioReverseSeq(vinfo.Ref) + next)
+				vinfo.OrigAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(before + For_Type_Safety_and_statics.BioReverseSeq(vinfo.Ref) + next), genetic_code)
 				vinfo.OrigAmino = vinfo.OrigAmino[::-1]
 
 			if Forward:
 				vinfo.ChangedTriplets = before2 + next2
 				vinfo.NewAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(vinfo.ChangedTriplets), genetic_code)
 			else:
-				vinfo.ChangedTriplets = For_Type_Safety_and_statics.ReverseSeq(before2 + next2)
+				vinfo.ChangedTriplets = For_Type_Safety_and_statics.BioReverseSeq(before2 + next2)
 				vinfo.NewAmino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(before2 + next2), genetic_code)
 				vinfo.NewAmino = vinfo.NewAmino[::-1]
 
 		origAmino = vinfo.OrigAmino
 		newAmino = vinfo.NewAmino
-		vinfo.OrigRevTriplets = For_Type_Safety_and_statics.ReverseSeq(vinfo.OrigTriplets)
+		vinfo.OrigRevTriplets = For_Type_Safety_and_statics.BioReverseSeq(vinfo.OrigTriplets)
 
 		if stopcodon in origAmino and not stopcodon in newAmino:
 			vinfo.Classification.append(TranscriptEnum.STOP_LOST)
@@ -765,6 +836,8 @@ class Transcript:
 					vinfo.Classification.append(TranscriptEnum.STOP_GAINED)
 		elif origAmino != newAmino:
 			vinfo.Classification.append(TranscriptEnum.AA_CHANGE)
+		if stopcodon in self.IV_ChangedTranslation:
+			self.Lost_Stop = False
 
 	def IV_Local_Effect_Length(self, vinfo: Variant_Information_Storage):
 		"""
@@ -844,55 +917,84 @@ class Transcript:
 		# new stop position
 		# dna to this code -< append changed_cds
 		###
-
-		if currentRaster == 0:
-			dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + nextDNA
-			oldDNA = 1
-		elif currentRaster == 1:
-			dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-2] + self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + nextDNA
-			oldDNA = 2
-		elif currentRaster == 2:
-			dnaToTest = nextDNA
-			oldDNA = 0
+		#todo revdna hier?
+		if self.ForwardDirection == TranscriptEnum.FORWARD:
+			if currentRaster == 0:
+				dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + nextDNA
+				oldDNA = 1
+			elif currentRaster == 1:
+				dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-2] + self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + nextDNA
+				oldDNA = 2
+			elif currentRaster == 2:
+				dnaToTest = nextDNA
+				oldDNA = 0
+			else:
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
+				#print ("Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
+				return False
+		elif self.ForwardDirection == TranscriptEnum.REVERSE:
+			if currentRaster == 0:
+				dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + For_Type_Safety_and_statics.BioReverseSeq(nextDNA)
+				oldDNA = 1
+			elif currentRaster == 1:
+				dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-2] + self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + For_Type_Safety_and_statics.BioReverseSeq(nextDNA)
+				oldDNA = 2
+			elif currentRaster == 2:
+				dnaToTest = For_Type_Safety_and_statics.BioReverseSeq(nextDNA)
+				oldDNA = 0
+			else:
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
+				#print ("Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
+				return False
 		else:
-			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
-			#print ("Error in find_New_Stop: " + str(self.TID) + " " + str(currentRaster) + "\n" )
+			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+								  "Error in find_New_Stop, not transcript direction: " + str(self.TID) + " " + str(currentRaster) + "\n")
 			return False
 
 		new_Amino = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(dnaToTest), genetic_code)
 		position_in_string = new_Amino.find(stopcodon)
+
 
 		if position_in_string != -1:
 			###
 			# dna_position_in_string = 3*Amino_Acid_Position_in_String
 			# its alsways the start position -> Position 5 in amino == Stop is in dna_position 15,16,17
 			###
-
 			self.Lost_Stop = False
 			self.Found_New_Stop = True # maybe i can use this later
+			#todo new revdna?
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
 				self.IV_Changed_DNA_CDS_Seq += nextDNA[0:(1 + position_in_string) * 3 - oldDNA]
-				self.LastCDSPosition += (1+position_in_string)*3 -oldDNA
-				self.Complete_CDS += nextDNA[0:(1+position_in_string)*3 - oldDNA]
-				self.Rev_CDS += For_Type_Safety_and_statics.ReverseSeq(nextDNA[0:(1 + position_in_string) * 3 - oldDNA])
+				more = len(self.Complete_CDS + nextDNA[0:(1+position_in_string)*3 - oldDNA]) % 3
+				#self.LastCDSPosition += (1+position_in_string)*3 -oldDNA + more
+				self.change_Last_CDS_Position((1+position_in_string)*3 -oldDNA + more)
+				self.Complete_CDS += nextDNA[0:more + (1+position_in_string)*3 - oldDNA]
+				self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(nextDNA[0:(1 + position_in_string) * 3 - oldDNA])
 			else:
-				revdna = For_Type_Safety_and_statics.ReverseSeq(nextDNA[0:(1 + position_in_string) * 3 - oldDNA])
+				revdna = For_Type_Safety_and_statics.BioReverseSeq(nextDNA)[0:(1 + position_in_string) * 3 - oldDNA]
 				self.IV_Changed_DNA_CDS_Seq += revdna
+				more = (len(self.Rev_CDS + revdna) -oldDNA) % 3
+				#self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(nextDNA[0:more + (1 + position_in_string) * 3 - oldDNA])
 				self.Rev_CDS += revdna
-				self.Complete_CDS += nextDNA[0:(1 + position_in_string) * 3 - oldDNA]
-				self.LastCDSPosition -= (1 + position_in_string) * 3 - oldDNA
+				self.Complete_CDS = nextDNA[::-1][0:more +(1 + position_in_string) * 3 - oldDNA][::-1] +self.Complete_CDS
+				#self.LastCDSPosition -= (1 + position_in_string) * 3 - oldDNA - more
+				self.change_Last_CDS_Position((1 + position_in_string) * 3 - oldDNA + more)
 			self.IV_Check_For_New_Variants(genetic_code, stopcodon)
 		else:
 
-			self.Rev_CDS += For_Type_Safety_and_statics.ReverseSeq(nextDNA)
-			self.Complete_CDS += nextDNA
+			self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(nextDNA)
+			#todo new revdna?
 			#self.IV_Check_For_New_Variants(genetic_code, stopcodon)
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
-				self.LastCDSPosition += len(nextDNA)
+				#self.LastCDSPosition += len(nextDNA)
+				self.change_Last_CDS_Position(len(nextDNA))
 				self.IV_Changed_DNA_CDS_Seq += nextDNA
+				self.Complete_CDS += nextDNA
 			else:
-				self.LastCDSPosition -= len(nextDNA)
-				self.IV_Changed_DNA_CDS_Seq += For_Type_Safety_and_statics.ReverseSeq(nextDNA)
+				self.Complete_CDS = nextDNA + self.Complete_CDS
+				#self.LastCDSPosition -= len(nextDNA)
+				self.change_Last_CDS_Position(len(nextDNA))
+				self.IV_Changed_DNA_CDS_Seq += For_Type_Safety_and_statics.BioReverseSeq(nextDNA)
 			return False
 
 	def normalizeVariantClassification(self):
@@ -908,11 +1010,25 @@ class Transcript:
 
 	def resetTranscript(self):
 		self.IV_Changed_DNA_CDS_Seq = ""
-		self.IV_Ready = False
 		self.IV_NewPositionList = [0]
 		self.IV_OriginalTranslation = ""
 		self.IV_ChangedTranslation = ""
 		self.IV_Count_Stops_in_New_AA = -1
+		variantlist = []
+		for vinfo in self.IntegratedVariantObjects_CDS_Hits:
+			vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
+			variantlist.append(Variant("not needed here",
+							  vinfo.ChrPosition,
+							  vinfo.ID,
+							  -1,
+							  vinfo.Ref,
+							  vinfo.Alt,
+							  vinfo.Qual,
+							  vinfo.Filter,
+							  vinfo.OLD_Info))
+		self.IntegratedVariantObjects_CDS_Hits = []
+		for variant in variantlist:
+			self.Add_Variant_Information(variant)
 
 	def IV_Check_For_New_Variants(self, genetic_code: dict, stopcodon:str):
 		"""
@@ -1431,7 +1547,7 @@ class For_Type_Safety_and_statics:
 		return transcript
 
 	@staticmethod
-	def ReverseSeq (dna: str):
+	def BioReverseSeq (dna: str):
 		"""
 		It will build a biologically reversed dna strand.
 		:param dna: string
@@ -1444,6 +1560,16 @@ class For_Type_Safety_and_statics:
 		revdna = revdna.replace("G","c")
 		revdna = revdna.upper()
 		revdna = revdna[::-1]
+		return revdna
+
+	@staticmethod
+	def NotBioReverseSeq(dna:str):
+		revdna = dna.upper()
+		revdna = revdna.replace("A", "t")
+		revdna = revdna.replace("T", "a")
+		revdna = revdna.replace("C", "g")
+		revdna = revdna.replace("G", "c")
+		revdna = revdna.upper()
 		return revdna
 
 	@staticmethod
