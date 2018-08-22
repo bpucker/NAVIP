@@ -443,7 +443,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 									vinfo.ChrPosition)+ "\n")
 
 					else:
-						LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"No Classification in Complete_Check?"+ "\n")
+						LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"No Classification in Complete_Check:\t" + str(currentTranscript.TID) +"\t" + str(vinfo.ChrPosition)+ "\n")
 					#except IndexError:
 					#	LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_CRITICAL_LOG, str(vinfo.ChrPosition) + "\t" + str(currentTranscript.TID))
 	def Write_All_Fasta(data_path: str,
