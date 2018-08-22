@@ -266,7 +266,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
 							if vinfo.Ref != currentTranscript.SeqInCDS(
 									vinfo.ChrPosition,
-									vinfo.ChrPosition):
+									vinfo.ChrPosition) and not currentTranscript.CDS_Changed:
+								# When the used CDS gets changed, then it is of cause not possible to check against it.
 								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
 									vinfo.ChrPosition) + "\n")
 								#print("Sub_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
@@ -341,7 +342,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
 							if vinfo.Ref != currentTranscript.SeqInCDS(
 									vinfo.ChrPosition,
-									vinfo.ChrPosition):
+									vinfo.ChrPosition)and not currentTranscript.CDS_Changed:
+								# When the used CDS gets changed, then it is of cause not possible to check against it.
 								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
 									vinfo.ChrPosition) + "\n" )
 								#print("INSERTION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
@@ -410,7 +412,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
 							if vinfo.Ref != currentTranscript.SeqInCDS(
 									vinfo.ChrPosition,
-													vinfo.ChrPosition + len(vinfo.Ref) - 1):
+													vinfo.ChrPosition + len(vinfo.Ref) - 1)and not currentTranscript.CDS_Changed:
+								# When the used CDS gets changed, then it is of cause not possible to check against it.
 								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
 									vinfo.ChrPosition)+ "\n")
 

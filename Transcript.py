@@ -168,6 +168,7 @@ class Transcript:
 		self.MultiAllelVariants = False
 		self.Lost_Stop = False
 		self.Found_New_Stop = False
+		self.CDS_Changed = False
 
 	def SetGene_Start_Position(self,Gene_Start_Position:int):
 		"""
@@ -216,6 +217,7 @@ class Transcript:
 		Negative values: smaller CDS
 		:return: Nothing.
 		"""
+		self.CDS_Changed = True
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			if length < 0:
 				currentLastCDSLength = abs(self.ListofCDS[len(self.ListofCDS)-1][0] - self.ListofCDS[len(self.ListofCDS)-1][1])
