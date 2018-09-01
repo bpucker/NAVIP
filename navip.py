@@ -2,6 +2,8 @@ __author__  = "Jan-Simon Baasner"
 __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 import sys
+import os
+from time import sleep
 import VCF_preprocess,Coordinator, VCF_Format_Check
 try:
     import sfa
@@ -71,40 +73,31 @@ readmetext = "NAVIP has three existing modules: VCF preprocessing, the NAVIP mai
 
 
 if __name__ == '__main__':
-
-    #teststatement = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/first.vcf --ingff /grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/CRIBI_V2.1_extended_20161128.gff3 --infasta /grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/"
-    #teststatement = "--mode main --invcf /vol/tmp/Jens_Jan_Debugging_Share/debugging/Analyse_Influnence_Of_SNP/first.vcf --ingff /vol/tmp/Jens_Jan_Debugging_Share/debugging/CRIBI_V2.1_extended_20161128.gff3 --infasta /vol/tmp/Jens_Jan_Debugging_Share/debugging/Vv12x_CRIBI.fa --outpath /vol/tmp/Jens_Jan_Debugging_Share/de_2"
-
-    #for jens with possible bugs inside
-    #jenstest = "--mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/Seyval_variants.vcf " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/"
-    #jenstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf " \
-    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 " \
-    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch/"
-    #test = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakeVCFdata.vcf " \
-    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegff.gff " \
-    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegenomdata.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/"
-    #jenstest = "--mode sfa --innavipvcf /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/All_VCF.vcf " \
-    #           "--innavipfasta /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/all_transcripts_data.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/sfa/"
-
-    #jenstest= "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf --ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 --infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch2/"
-    #sys.argv = jenstest.split(" ")
-
-    #janstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakeVCFdata.vcf " \
-    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegff.gff " \
-    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegenomdata.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/"
-    #sys.argv = janstest.split()
-
+    
+    sleep(2) # time for creating directories. sometimes useful if python is to fast
     if "--mode" in sys.argv:
         args = sys.argv
         if args[args.index("--mode")+1] == "pre" \
                 and "--invcf" in args \
                 and "--outpath" in args:
             print("Start: VCF preprocessing")
+            try:
+                file = open(args[args.index("--invcf")+1],'r')
+                file.close()
+                file = open(args[args.index("--outpath")+1] + "try-file", "w")
+                file.write("test")
+                file.close()
+                os.remove(args[args.index("--outpath")+1] + "try-file")
+            except FileNotFoundError:
+                e = sys.exc_info()[0]
+                sys.exit(e)
+            except PermissionError:
+                e = sys.exc_info()[0]
+                sys.exit(e)
+            except :
+                e = sys.exc_info()[0]
+                sys.exit(e)
+
             VCF_preprocess.vcf_preprocessing(args[args.index("--invcf") + 1],
                                                args[args.index("--outpath") + 1])
 
@@ -115,6 +108,27 @@ if __name__ == '__main__':
                 and "--infasta" in args \
                 and "--outpath" in args:
             print("Start: NAVIP")
+            try:
+                file = open(args[args.index("--invcf")+1],'r')
+                file.close()
+                file = open(args[args.index("--ingff") + 1], 'r')
+                file.close()
+                file = open(args[args.index("--infasta") + 1], 'r')
+                file.close()
+                file = open(args[args.index("--outpath")+1] + "try-file", "w")
+                file.write("test")
+                file.close()
+                os.remove(args[args.index("--outpath")+1] + "try-file")
+            except FileNotFoundError:
+                e = sys.exc_info()[0]
+                sys.exit(e)
+            except PermissionError:
+                e = sys.exc_info()[0]
+                sys.exit(e)
+            except :
+                e = sys.exc_info()[0]
+                sys.exit(e)
+
             Coordinator.navip_main_coordinator(args[args.index("--invcf") + 1],
                                                args[args.index("--ingff") + 1],
                                                args[args.index("--infasta") + 1],
@@ -126,6 +140,24 @@ if __name__ == '__main__':
                 and "--innavipfasta" in args\
                 and "--outpath" in args:
             print("Start: simple first analysis")
+            try:
+                file = open(args[args.index("--innavipvcf")+1],'r')
+                file.close()
+                file = open(args[args.index("--innavipfasta") + 1], 'r')
+                file.close()
+                file = open(args[args.index("--outpath")+1] + "try-file", "w")
+                file.write("test")
+                file.close()
+                os.remove(args[args.index("--outpath")+1] + "try-file")
+            except FileNotFoundError:
+                e = sys.exc_info()[0]
+                sys.exit(e)
+            except PermissionError:
+                e = sys.exc_info()[0]
+                sys.exit(e)
+            except :
+                e = sys.exc_info()[0]
+                sys.exit(e)
             sfa.sfa_main(args[args.index("--innavipvcf") + 1],
                         args[args.index("--innavipfasta") + 1],
                         args[args.index("--outpath") + 1])
@@ -144,3 +176,4 @@ if __name__ == '__main__':
     else:
         print("Arguments are invalid."
               "\nPlease look into the Readme.txt or create a new one with \"--read\"")
+    print(sys.argv)

@@ -201,23 +201,22 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 	starttime = datetime.now()
 
 	line = ori_vcf_file.readline()
+	infos = []
 	lines1 = []
 	lines2 = []
 	formatMultiallelVariantWarning = True
 	while line:
 		if line.startswith("#"):
+			infos.append(line)
 			line = ori_vcf_file.readline()
 			continue
 
 		splitline = line.split("\t")
 		if len(splitline) == 1:
 			#no tabs or the empty line in the end
+			print("No tabs or the empty line in the end.")
 			line = ori_vcf_file.readline()
 			continue
-
-		elif line.startswith("#"):
-			lines1.append(line)
-			lines2.append(line)
 		elif "," in splitline[4]:
 			split_allele = splitline[4].split(",")
 
@@ -243,6 +242,8 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 				formatMultiallelVariantWarning = False
 				print("Warning: Preprocessing_original_vcf_file (logfile)")
 		else:
+			if len(splitline[3]) > 1 and len(splitline[4]) > 1:
+				line = formatMultiallelVariant(splitline)
 			lines1.append(line)
 			lines2.append(line)
 		line = ori_vcf_file.readline()
@@ -380,10 +381,12 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 	print("Remove Shitty data 2 done: " + str(datetime.now() - starttime))
 
 	nvcf_1 = open (new1_vcf,"w")
+	nvcf_1.write("".join(infos))
 	nvcf_1.write("".join(lines1))
 	nvcf_1.close()
 
 	nvcf_2 = open (new2_vcf, "w")
+	nvcf_2.write("".join(infos))
 	nvcf_2.write("".join(lines2))
 	nvcf_2.close()
 	print("preprocessing done: " + str(datetime.now() - starttime))
