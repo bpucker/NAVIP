@@ -73,7 +73,7 @@ readmetext = "NAVIP has three existing modules: VCF preprocessing, the NAVIP mai
 
 
 if __name__ == '__main__':
-    
+    #gittest
     sleep(2) # time for creating directories. sometimes useful if python is to fast
     if "--mode" in sys.argv:
         args = sys.argv
