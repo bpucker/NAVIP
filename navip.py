@@ -74,43 +74,6 @@ readmetext = "NAVIP has three existing modules: VCF preprocessing, the NAVIP mai
 
 if __name__ == '__main__':
 
-    #teststatement = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/first.vcf --ingff /grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/CRIBI_V2.1_extended_20161128.gff3 --infasta /grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/"
-    #teststatement = "--mode main --invcf /vol/tmp/Jens_Jan_Debugging_Share/debugging/Analyse_Influnence_Of_SNP/first.vcf --ingff /vol/tmp/Jens_Jan_Debugging_Share/debugging/CRIBI_V2.1_extended_20161128.gff3 --infasta /vol/tmp/Jens_Jan_Debugging_Share/debugging/Vv12x_CRIBI.fa --outpath /vol/tmp/Jens_Jan_Debugging_Share/de_2"
-
-    #for jens with possible bugs inside
-    #jenstest = "--mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/Seyval_variants.vcf " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/"
-    #jenstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/jens_NAVIP_bugsearch/chr18.vcf " \
-    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/chr18.gff3 " \
-    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/jens_NAVIP_bugsearch/it/"
-    #test = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakeVCFdata.vcf " \
-    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegff.gff " \
-    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegenomdata.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/"
-    #jenstest = "--mode sfa --innavipvcf /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/All_VCF.vcf " \
-    #           "--innavipfasta /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/all_transcripts_data.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/Bugsearch_for_Jens/SEY/second/sfa/"
-
-    #jenstest= "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/testfirst.vcf --ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/test.gff3 --infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/Vv12x_CRIBI.fa --outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/Bugsearch_for_Jens/PN/bugsearch2/"
-    #sys.argv = jenstest.split(" ")
-
-    #janstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakeVCFdata.vcf " \
-    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegff.gff " \
-    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegenomdata.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/"
-    #janstest = "--mode sfa --innavipvcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/All_VCF.vcf " \
-    #           "--innavipfasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/all_transcripts_data.fa " \
-    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/sfa/"
-
-    #snpeffTest = "--mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/members/bpucker/20180820_SnpEff_on_validated_variants/valid_SNPs.vcf " \
-    #             "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/"
-
-    #snpeffTest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/Pre-Module/first.vcf " \
-    #             "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/sources/Araport11_GFF3_genes_transposons.201606_WITHOUT_ORGANELS.gff " \
-    #             "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/sources/TAIR10.fa " \
-    #             "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/first/"
-    #sys.argv = snpeffTest.split()
     sleep(2) # time for creating directories. sometimes useful if python is to fast
     if "--mode" in sys.argv:
         args = sys.argv
