@@ -250,32 +250,11 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 	ori_vcf_file.close()
 
 	# sorting, first after chromosome, then after position
-	# necessary, because the standardization of triallelvariation could change the order of the lines
+	# necessary, because the standardization of variations could change the order of the lines
 	lines1 = sorted(lines1,key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
 	lines2 = sorted(lines2, key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
 	#check if there are lines, which have the same position
 
-
-	""" old and slow
-	warning = True
-	for i,line in enumerate(lines1):
-		spline = line.split("\t")
-		if i == 0 or len(spline) == 1:
-			continue
-		if spline[1] == lines1[i-1].split("\t")[1]:
-			if warning:
-				print("VCF-Preprocessing Warning for File 1 in logfile.")
-				VCF_preproc_log_in_short.append("VCF-Preprocessing Warning for File 1:\n")
-				warning = False
-			#print(str(lines1[i - 1]))
-			#print("Removed: " + str(line))
-			VCF_preproc_log_in_short.append("Take:\t" + str("\t".join(lines1[i - 1].split("\t")[0:5])) + "\n")
-			VCF_preproc_log.append(str(lines1[i - 1]))
-			VCF_preproc_log_in_short.append("Rem.:\t" + str("\t".join(line.split("\t")[0:5])) + "\n")
-			VCF_preproc_log.append("Removed: " + str(line))
-
-			lines1.remove(line)
-	"""
 	print("1/3 done: " + str(datetime.now()- starttime))
 	warning = True
 	i = 0
@@ -299,25 +278,6 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 			continue
 		i += 1
 
-	""" old and slow
-	warning = True
-	for i, line in enumerate(lines2):
-		spline = line.split("\t")
-		if i == 0 or len(spline) == 1:
-			continue
-		if spline[1] == lines2[i - 1].split("\t")[1]:
-			if warning:
-				print("VCF-Preprocessing Warning for File 2 in logfile.")
-				VCF_preproc_log_in_short.append("VCF-Preprocessing Warning for File 2:\n")
-				warning = False
-			#print(str(lines2[i - 1]))
-			#print("Removed:" + str(line))
-			VCF_preproc_log_in_short.append("Take:\t" + str("\t".join(lines2[i - 1].split("\t")[0:5])) + "\n")
-			VCF_preproc_log.append(str(lines2[i - 1]))
-			VCF_preproc_log_in_short.append("Rem.:\t" + str("\t".join(line.split("\t")[0:5])) + "\n")
-			VCF_preproc_log.append("Removed:" + str(line))
-			lines2.remove(line)
-	"""
 	print("2/3 done: " + str(datetime.now() - starttime))
 	warning = True
 	i = 0
@@ -341,7 +301,7 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 			continue
 		i += 1
 
-	def remove_shitty_data(lines:list)->list:
+	def remove_data(lines:list)->list:
 		i = 0
 		removedEntries = 0
 		max = len(lines) - 1
@@ -374,11 +334,11 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 		return lines
 
 	VCF_preproc_log_in_short.append("Data Conflicts in File 1:\n")
-	lines1 = remove_shitty_data(lines1)
-	print("Remove Shitty data 1 done: "+ str(datetime.now() - starttime))
+	lines1 = remove_data(lines1)
+	print("Remove data 1 done: "+ str(datetime.now() - starttime))
 	VCF_preproc_log_in_short.append("Data Conflicts in File 2:\n")
-	lines2 = remove_shitty_data(lines2)
-	print("Remove Shitty data 2 done: " + str(datetime.now() - starttime))
+	lines2 = remove_data(lines2)
+	print("Remove data 2 done: " + str(datetime.now() - starttime))
 
 	nvcf_1 = open (new1_vcf,"w")
 	nvcf_1.write("".join(infos))
@@ -411,16 +371,3 @@ def vcf_preprocessing(invcf,outpath):
 	new2_vcf = outpath + "second.vcf"
 	### split vcf file data rows into two new vcf files, because of the multiallele variants
 	Preprocessing_original_vcf_file(invcf, new1_vcf, new2_vcf, outpath)
-
-# python3 navip.py --mode pre --invcf /grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/merged_variants.g.vcf --outpath /prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/
-
-#vcf_preprocessing("/grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/merged_variants.g.vcf", "/prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/")
-
-
-
-#if __name__ == '__main__':
-#	vcf_preprocessing("/grp/gf/Alle_temp_Ordner/datenaustausch_jan_sarah/merged_variants.g.vcf",
-#					  "/prj/gf-arabseq/project_VariantAnnotation/navip_bugsearch/")
-
-
-
