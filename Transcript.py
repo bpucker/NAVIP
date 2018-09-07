@@ -437,7 +437,6 @@ class Transcript:
 
 			#intForFrameshifts = 0
 			Marked = False
-
 			in_the_end = False
 			for i in range(1, len(IntegratedVariantObjects)):
 				current_vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(IntegratedVariantObjects[i])
@@ -527,9 +526,9 @@ class Transcript:
 			else:
 				break
 
-		self.remiveOutsiderVariants(lastPossibleChrPosition)
+		self.removeOutsiderVariants(lastPossibleChrPosition)
 
-	def remiveOutsiderVariants(self,ChrPosition:int):
+	def removeOutsiderVariants(self, ChrPosition:int):
 		markedForDeletion = []
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			for vinfo in self.IntegratedVariantObjects_CDS_Hits:
@@ -543,7 +542,6 @@ class Transcript:
 		for vinfo in markedForDeletion:
 			self.IntegratedVariantObjects_CDS_Hits.remove(vinfo)
 			self.IntegratedVariantObjects_NotCDS.append(vinfo)
-
 
 	def IV_Local_Classification(self,vinfo: Variant_Information_Storage, genetic_code: dict, stopcodon: str):
 		"""
@@ -853,7 +851,13 @@ class Transcript:
 		starteffect = vinfo.Changed_CDS_Position - vinfo.Changed_Raster
 		classification = vinfo.Classification
 
-		if TranscriptEnum.STOP_GAINED in classification or TranscriptEnum.STOP_LOST in classification or TranscriptEnum.FRAMESHIFT in classification or TranscriptEnum.FRAMESHIFT_1 in classification or TranscriptEnum.FRAMESHIFT_2 in classification:
+		if TranscriptEnum.STOP_GAINED in classification \
+				or TranscriptEnum.STOP_LOST in classification \
+				or TranscriptEnum.FRAMESHIFT in classification \
+				or TranscriptEnum.FRAMESHIFT_1 in classification \
+				or TranscriptEnum.FRAMESHIFT_2 in classification \
+				or TranscriptEnum.FRAMESHIFT_1_DEL in classification \
+				or TranscriptEnum.FRAMESHIFT_2_DEL in classification:
 			if TranscriptEnum.FRAMESHIFT in classification:
 				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Still FRAMESHIFT in use." + "\n" )
 			endeffect = VariantEnum.NO_EndOfOwnEffect
