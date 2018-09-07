@@ -40,6 +40,8 @@ class TranscriptEnum (Enum):
 	CDS_STOP_INVOLVED = "Hits CDS Stop and after"
 	CDS_INTRON_TO_EXON = "Hits from intron to exon"
 	CDS_EXON_TO_INTRON = "Hits from exon to intron"
+	CDS_INTRON_DELETION = "CDS_INTRON_DELETION".lower()
+	CDS_EXON_DELETION = "CDS_EXON_DELETION".lower()
 
 
 class Variant_Information_Storage:
@@ -1193,7 +1195,6 @@ class Transcript:
 		:return: Variant_Information_Storage.
 		"""
 
-
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			CDS_Position = self.SearchPositionInCDS(variant.Position)
 			newEntry = Variant_Information_Storage(variant.Position,
@@ -1207,6 +1208,7 @@ class Transcript:
 												   )
 			if len(variant.Reference) > 1:  # DEL
 				cds_2 = self.SearchPositionInCDS(variant.Position + len(variant.Reference) - 1)
+				largerImpactDeletion = self.SearchPositionPairAroundTranscript(variant.Position,variant.Position + len(variant.Reference) - 1)
 
 		else: # self.ForwardDirection == TranscriptEnum.REVERSE:
 			CDS_Position = self.SearchPositionInCDSReverse(variant.Position)
@@ -1214,6 +1216,8 @@ class Transcript:
 			if len(variant.Reference) > 1:  # DEL
 				CDS_Position = self.SearchPositionInCDSReverse(variant.Position + (len(variant.Reference) - 1))
 				cds_2 = self.SearchPositionInCDSReverse(variant.Position)
+				largerImpactDeletion = self.SearchPositionPairAroundTranscript(variant.Position, variant.Position + len(
+					variant.Reference) - 1)
 
 
 			newEntry = Variant_Information_Storage(variant.Position,
@@ -1226,7 +1230,18 @@ class Transcript:
 												   variant.Info
 												   )
 		if len(variant.Reference) > 1:  # DEL
-
+			if largerImpactDeletion[0] != largerImpactDeletion[1]:
+				self.Transcript_CDS_damaged = True
+				self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
+				if largerImpactDeletion[1] % 1 == float(0):
+					newEntry.Classification.append(TranscriptEnum.CDS_INTRON_DELETION)
+				elif largerImpactDeletion[1] % 1 == float(0.5):
+					newEntry.Classification.append(TranscriptEnum.CDS_EXON_DELETION)
+				else:
+					LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+										  "Possible bug in Add_Variant_Information: " + str(self.TID) + "\t" + str(
+											  variant.Position) + "\n")
+				#self.IV_CDS_Damaging_Variant_Handler(newEntry)
 			if type(CDS_Position) == int and cds_2 == TranscriptEnum.POSITION_NOT_IN_CDS:
 				self.Transcript_CDS_damaged = True
 				self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
@@ -1361,21 +1376,29 @@ class Transcript:
 		:param EndpositionInChr: The position of the variant + length of deletion.
 		:return: List of two floats.
 		"""
+		lockedFirst = False
+		lockedSecond = False
 		result = [float(0.0),float(0.0)]
 		for i,CDS in enumerate(self.ListofCDS):
-			if StartpositionInChr < CDS[0]:
+			if StartpositionInChr < CDS[0] and not lockedFirst:
 				result[0] = float(i) - float(0.5)
-			elif CDS[0] <= StartpositionInChr <= CDS[1]:
+				lockedFirst = True
+			elif CDS[0] <= StartpositionInChr <= CDS[1] and not lockedFirst:
 				result[0] = float(i)
-			elif StartpositionInChr > CDS[1] and i -1 == len(self.ListofCDS):
+				lockedFirst = True
+			elif StartpositionInChr > CDS[1] and i -1 == len(self.ListofCDS) and not lockedFirst:
 				result[0] = float(i) + float(0.5)
+				lockedFirst = True
 
-			if EndpositionInChr < CDS[0]:
+			if EndpositionInChr < CDS[0] and not lockedSecond:
 				result[1] = float(i) - float(0.5)
-			elif CDS[0] <= EndpositionInChr <= CDS[1]:
+				lockedSecond = True
+			elif CDS[0] <= EndpositionInChr <= CDS[1] and not lockedSecond:
 				result[1] = float(i)
-			elif EndpositionInChr > CDS[1] and i - 1 == len(self.ListofCDS):
+				lockedSecond = True
+			elif EndpositionInChr > CDS[1] and i - 1 == len(self.ListofCDS) and not lockedSecond:
 				result[1] = float(i) + float(0.5)
+				lockedSecond = True
 		return result
 
 	def SearchPositionInCDSReverse(self, PositionInChr: int) -> int:
