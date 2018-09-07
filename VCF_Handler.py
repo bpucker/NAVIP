@@ -51,7 +51,7 @@ class VCF_HANDLER:
 					Now = lines.split('\t')
 					if len(Now) >8:
 						infoline = "\t".join(Now[7:])
-					else :
+					elif len(Now) == 8:
 						infoline = Now[7]
 					CurrentList.append(Now)
 					varianti = VCF_Variant.Variant(

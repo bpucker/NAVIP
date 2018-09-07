@@ -88,7 +88,7 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 			new_entry.append(str(splitline[2]))  # .
 			new_entry.append(str(splitline[3][skipped:len(splitline[3]) - removed]))  # new ref
 			new_entry.append(str(splitline[4][skipped:len(splitline[4]) - removed]))  # new alt
-			new_entry.append("".join(splitline[5:]))  # anything after
+			new_entry.append("\t".join(splitline[5:]))  # anything after
 			return ("\t".join(new_entry))
 		elif reflen == altlen:
 			# Chr1	12997	.	CT	C,CT (made up data)
