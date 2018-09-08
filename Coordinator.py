@@ -774,15 +774,18 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				#lost stop, but got new somewhere in the transcript
 				currentTranscript.Lost_Stop = False
 				currentTranscript.prematureStopCodon(stopcodon)
+			elif stopcodon not in currentTranscript.IV_ChangedTranslation:
+				currentTranscript.Lost_Stop = True
 
 			while currentTranscript.Lost_Stop:
+				print(currentTranscript.TID)
 				currentTranscript.Create_IV_ChangedTranslation(genetic_code)
 				if stopcodon in currentTranscript.IV_ChangedTranslation:
 					# print("new stopcodon already inside transcript" + str(transcriptHier.TID))
 
 					#LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"New Stopcodon is in " + str(currentTranscript.TID) + "\n")
 					lastPosInCDS = currentTranscript.LastCDSPosition
-					if currentTranscript.Found_New_Stop:
+					if currentTranscript.Found_New_Stop or stopcodon in currentTranscript.IV_ChangedTranslation:
 						break
 					currentTranscript.Lost_Stop = False
 					currentTranscript.Found_New_Stop = True
@@ -791,10 +794,9 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				# print ("Lost_Stop not completely inside transcript.")
 				lastPosInCDS = currentTranscript.LastCDSPosition
 				if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
-					nextDNA = ghandler.seq(name, lastPosInCDS + 1, lastPosInCDS + 101)
-					test = ghandler.seq(name, lastPosInCDS - 4, lastPosInCDS + 10)
+					nextDNA = ghandler.seq(name, lastPosInCDS + 1, lastPosInCDS + 100)
 				elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
-					nextDNA = ghandler.seq(name, lastPosInCDS - 101, lastPosInCDS - 1)
+					nextDNA = ghandler.seq(name, lastPosInCDS - 100, lastPosInCDS - 1)
 					#nextDNA = For_Type_Safety_and_statics.ReverseSeq(nextDNA) #reverse, because it will be added to the already reversed dna transcript
 				else:
 					LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Error: No Direction: " + str(currentTranscript.TID)+"\n")

@@ -228,6 +228,7 @@ class Transcript:
 					length = -abs(currentLastCDSLength + length)
 					currentLastCDSLength = abs(self.ListofCDS[len(self.ListofCDS) - 1][0] - self.ListofCDS[len(self.ListofCDS) - 1][1])
 			self.ListofCDS[len(self.ListofCDS)-1][1] = self.LastCDSPosition + length
+			self.LastCDSPosition += length
 		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			if length < 0:
 				currentLastCDSLength = (abs(self.ListofCDS[0][0] - self.ListofCDS[0][1]))
@@ -236,6 +237,7 @@ class Transcript:
 					length = -abs(currentLastCDSLength + length)
 					currentLastCDSLength = (abs(self.ListofCDS[0][0] - self.ListofCDS[0][1]))
 			self.ListofCDS[0][0] = self.LastCDSPosition - length
+			self.LastCDSPosition -= length
 		else:
 			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "No Direction: " + str(self.TID) + "\n")
 
@@ -346,6 +348,10 @@ class Transcript:
 					first = self.IV_Changed_DNA_CDS_Seq[0:firstkoord]
 				else:
 					first = ""
+				meh = len(self.IV_Changed_DNA_CDS_Seq)
+				if self.TID == 'AT3G42153.1':
+					print("bugsearch AT3G42153.1")
+					meh2 = self.IV_Changed_DNA_CDS_Seq[meh-10:]
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
 				if test != ref:
 					LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
@@ -925,7 +931,6 @@ class Transcript:
 		# new stop position
 		# dna to this code -< append changed_cds
 		###
-		#todo revdna hier?
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			if currentRaster == 0:
 				dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + nextDNA
@@ -970,7 +975,6 @@ class Transcript:
 			###
 			self.Lost_Stop = False
 			self.Found_New_Stop = True # maybe i can use this later
-			#todo new revdna?
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
 				self.IV_Changed_DNA_CDS_Seq += nextDNA[0:(1 + position_in_string) * 3 - oldDNA]
 				more = len(self.Complete_CDS + nextDNA[0:(1+position_in_string)*3 - oldDNA]) % 3
@@ -986,12 +990,14 @@ class Transcript:
 				self.Rev_CDS += revdna
 				self.Complete_CDS = nextDNA[::-1][0:more +(1 + position_in_string) * 3 - oldDNA][::-1] +self.Complete_CDS
 				#self.LastCDSPosition -= (1 + position_in_string) * 3 - oldDNA - more
-				self.change_Last_CDS_Position((1 + position_in_string) * 3 - oldDNA + more)
+				self.change_Last_CDS_Position((1 + position_in_string) * 3 - oldDNA - more)
+			if self.TID == 'AT3G42153.1':
+				print("bugsearch AT3G42153.1")
 			self.IV_Check_For_New_Variants(genetic_code, stopcodon)
 		else:
 
 			self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(nextDNA)
-			#todo new revdna?
+
 			#self.IV_Check_For_New_Variants(genetic_code, stopcodon)
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
 				#self.LastCDSPosition += len(nextDNA)
@@ -1019,6 +1025,7 @@ class Transcript:
 	def resetTranscript(self):
 		self.IV_Changed_DNA_CDS_Seq = ""
 		self.IV_NewPositionList = [0]
+		self.IV_Changed_DNA_CDS_Seq = []
 		self.IV_OriginalTranslation = ""
 		self.IV_ChangedTranslation = ""
 		self.IV_Count_Stops_in_New_AA = -1
