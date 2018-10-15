@@ -537,10 +537,19 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 								str(classificationstring) + "\n")
 						continue
 
+					# Meh more DNA/AA Sequences, thanks to Stop-lost transcription length changes
+					normal_data_list_to_write.append(
+						">" + str(currentTranscript.TID) + "|" + Fasta_Enum.ouchDNA.value + "\n")
+					normal_data_list_to_write.append(str(currentTranscript.uChDNAsequence) + "\n")
+
+					normal_data_list_to_write.append(
+						">" + str(currentTranscript.TID) + "|" + Fasta_Enum.ouchAA.value + "\n")
+					normal_data_list_to_write.append(str(currentTranscript.uChAAsequence) + "\n")
+
 					if New_DNA:
 						normal_data_list_to_write.append(
 							">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.nDNA.value) + "\n")
-						normal_data_list_to_write.append(currentTranscript.IV_Changed_DNA_CDS_Seq + "\n")
+						normal_data_list_to_write.append(str(currentTranscript.IV_Changed_DNA_CDS_Seq) + "\n")
 					if New_AA:
 						normal_data_list_to_write.append(
 							">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.nAA.value) + "\n")
@@ -657,7 +666,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		#		trancripts[i].ReverseTheCDS()
 
 		for trancript in gff3.GetChrTranscriptsDict(name).values():
-			trancript.CompleteTheCDS(ghandler.seq(name, trancript.StartOfRNA, trancript.EndOfRNA))
+			trancript.CompleteTheCDS(ghandler.seq(name, trancript.StartOfRNA, trancript.EndOfRNA), genetic_code)
 			if trancript.ForwardDirection == TranscriptEnum.REVERSE:
 				trancript.ReverseTheCDS()
 
@@ -673,15 +682,18 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	# The connection triggers a first evaluation of the variants, too.
 	###
 	transcriptRange = 300 # base pairs before RNA starts and after RNA ends. Just in Case for long InDels.
+	phasingWarning = True
 	print("Connect transcripts with variants")
 	for name in Shared_Chromosomes:
 		print("Search in " + name)
 
+		phasingVariants = [] # should normally be empty
 		currentTranscriptID = 0 # initialization, first Round == 0
 		firstTranscriptMatch = 0 #
 		currentTranscriptList = gff3.GetChrTranscriptList(name)
 		transcriptsWithMultiAllelVariants = []
 		transcriptsWithoutStop = []
+
 
 		for variant in vcf.GetChr_VCF_Variant_List(name):
 			found = True
@@ -705,8 +717,17 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					currentTranscript.Add_Variant_Information(variant)
 
 					if "," in variant.Alternate and currentTranscript not in transcriptsWithMultiAllelVariants:
+						if phasingWarning:
+							phasingWarning = False
+							print('Warning: Still Phases inside VCF. It may not work correctly and can slow down the whole process.')
 						# not necessary with vcf-preprocessing - but maybe the data change in the future -> usefull again
 						transcriptsWithMultiAllelVariants.append(currentTranscript)
+					if "," in variant.Alternate and variant not in phasingVariants:
+						phasingVariants.append(variant)
+						LogOrganizer.addToLog(LogEnums.COORDINATOR_PHASING_LOG, str(Variant.Chromosome)+
+											  str(Variant.Position) +"\t"+ str(Variant.ID) +"\t"+ str(Variant.Reference)
+											  + "\t" + str(Variant.Alternate) +"\t"+ str(Variant.Qual) +"\t"+ str(Variant.Filter)
+											  +"\t"+  str(Variant.Info))
 					if currentTranscript.Lost_Stop:
 						transcriptsWithoutStop.append(currentTranscript)
 
@@ -778,7 +799,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				currentTranscript.Lost_Stop = True
 
 			while currentTranscript.Lost_Stop:
-				print(currentTranscript.TID)
+				#print(currentTranscript.TID)
 				currentTranscript.Create_IV_ChangedTranslation(genetic_code)
 				if stopcodon in currentTranscript.IV_ChangedTranslation:
 					# print("new stopcodon already inside transcript" + str(transcriptHier.TID))
@@ -802,6 +823,20 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Error: No Direction: " + str(currentTranscript.TID)+"\n")
 					break
 				currentTranscript.Find_New_Stop(nextDNA, genetic_code, stopcodon)
+
+			if len(currentTranscript.IV_Changed_DNA_CDS_Seq) % 3 != 0 \
+					or len(currentTranscript.Complete_CDS) % 3 != 0 \
+					or len(currentTranscript.Rev_CDS) % 3 != 0:
+				#dostuff 	1 -> +2bp
+				#			2 -> +1bp
+				currentTranscript.checkLastVariants(ghandler, genetic_code, stopcodon)
+				# +2 positions means 2 potential more variant effects.
+				# repeatly, and check if deletions now have a new effect, because in rev cds it can be .... .... ....
+				# and it is possible, that damaged transcripts (rev cds) is still functional because of this, meeeh fuck it
+			while currentTranscript.origDNAtoshort:
+				print(currentTranscript.TID)
+				currentTranscript.checkLastVariants(ghandler, genetic_code, stopcodon)
+
 
 	print("Done: " + str(datetime.now() - timeStart))
 	####################################################

@@ -129,3 +129,5 @@ class Fasta_Enum(Enum):
     OAA = "oAA"     #original AA sequence
     nDNA = "nDNA"   #new DNA
     nAA = "nAA"     #new AA sequence
+    ouchDNA = "ouchDNA" # old unchanged DNA
+    ouchAA = "ouchAA" # old unchanged AA

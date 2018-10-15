@@ -53,8 +53,10 @@ class GFF3_Handler_V3:
 				print(line)
 				print("Item(s) without ID - is it really gff version 3?(or empty lines....)")
 				sys.exit()
-			self.gff3_ID_Dict[seqid,gff3_id] = spline
-
+			try:
+				self.gff3_ID_Dict[seqid,gff3_id].append(spline)
+			except KeyError:
+				self.gff3_ID_Dict[seqid, gff3_id] = [spline]
 			if len(parent) == 0:
 				#when its a gene entry
 				continue
@@ -66,65 +68,68 @@ class GFF3_Handler_V3:
 
 	def createTranscripts(self):
 
-		for key, spline in self.gff3_ID_Dict.items():
+		for key, splinelist in self.gff3_ID_Dict.items():
 
-			if spline[2] != "gene":
-				continue
-
-			gene_seqid = spline[0]
-			gene_gff3_ID = key[1] # because of (seqid,gff3_id)
-			gene_info_string = spline[8]
-
-			if gene_seqid not in self.dict_Chr_dict_Transcript:
-				self.dict_Chr_dict_Transcript[gene_seqid] = {}
-
-
-			for spline_child in self.dict_gff_for_parents[gene_seqid,gene_gff3_ID]:
-				gfftype = spline_child[2]
-				if 'mRNA' not in gfftype:
+			for spline in splinelist:
+				if spline[2] != "gene":
 					continue
 
-				start = int(spline_child[3])
-				end = int(spline_child[4])
-				if spline_child[6] == '+':
-					strand = Transcript.TranscriptEnum.FORWARD
-				elif spline_child[6] == '-':
-					strand = Transcript.TranscriptEnum.REVERSE
-				else:
-					strand = Transcript.TranscriptEnum.UNKNOWN_STRAND_DIRECTION
-				phase = spline_child[7]
+				gene_seqid = spline[0]
+				gene_gff3_ID = key[1] # because of (seqid,gff3_id)
+				gene_info_string = spline[8]
 
-				atts = spline_child[8].split(';')
-				TID = ""
-				for att in atts:
-					if 'ID=' in att:
-						TID = att[3:]
-						break
-				if TID == "":
-					print("No ID:\n" + spline_child)
-					sys.exit()
+				if gene_seqid not in self.dict_Chr_dict_Transcript:
+					self.dict_Chr_dict_Transcript[gene_seqid] = {}
 
-				# IndexKey: int, TID: str, StartOfRNA: int, EndOfRNA: int, ForwardDirection: TranscriptEnum.REVERSE):
-				transcript = Transcript.Transcript(self.GetNextTranscriptIndex(),
-										TID,
-										start,
-										end,
-										strand)
-				cdslist = []
-				for rna_child_spline in self.dict_gff_for_parents[gene_seqid,TID]:
-					if "CDS" in rna_child_spline[2]:
-						cdslist.append((int(rna_child_spline[3]),int(rna_child_spline[4]),rna_child_spline[7]))
-					elif "exon" in rna_child_spline[2]:
-						transcript.AddEXON_Descriptin("\t".join(rna_child_spline))
-					elif "utr" in rna_child_spline[2]:
-						transcript.AddUTR_Description("\t".join(rna_child_spline))
 
-				cdslist = sorted(cdslist)
-				for cds in cdslist:
-					transcript.addCDS(cds[0],cds[1],cds[2])
-				transcript.SetGene_Info_String(gene_info_string)
-				self.dict_Chr_dict_Transcript[gene_seqid][transcript.IndexKey] = transcript
-				self.List_Of_Transcripts[gene_seqid].append(transcript)
+				for spline_child in self.dict_gff_for_parents[gene_seqid,gene_gff3_ID]:
+					chr = spline_child[0]
+					gfftype = spline_child[2]
+					if 'mRNA' not in gfftype:
+						continue
+
+					start = int(spline_child[3])
+					end = int(spline_child[4])
+					if spline_child[6] == '+':
+						strand = Transcript.TranscriptEnum.FORWARD
+					elif spline_child[6] == '-':
+						strand = Transcript.TranscriptEnum.REVERSE
+					else:
+						strand = Transcript.TranscriptEnum.UNKNOWN_STRAND_DIRECTION
+					phase = spline_child[7]
+
+					atts = spline_child[8].split(';')
+					TID = ""
+					for att in atts:
+						if 'ID=' in att:
+							TID = att[3:]
+							break
+					if TID == "":
+						print("No ID:\n" + spline_child)
+						sys.exit()
+
+					# IndexKey: int, TID: str, StartOfRNA: int, EndOfRNA: int, ForwardDirection: TranscriptEnum.REVERSE):
+					transcript = Transcript.Transcript(self.GetNextTranscriptIndex(),
+											TID,
+											start,
+											end,
+											strand,
+											chr)
+					cdslist = []
+					for rna_child_spline in self.dict_gff_for_parents[gene_seqid,TID]:
+						if "CDS" in rna_child_spline[2]:
+							cdslist.append((int(rna_child_spline[3]),int(rna_child_spline[4]),rna_child_spline[7]))
+						elif "exon" in rna_child_spline[2]:
+							transcript.AddEXON_Descriptin("\t".join(rna_child_spline))
+						elif "utr" in rna_child_spline[2]:
+							transcript.AddUTR_Description("\t".join(rna_child_spline))
+
+					cdslist = sorted(cdslist)
+					for cds in cdslist:
+						transcript.addCDS(cds[0],cds[1],cds[2])
+					transcript.SetGene_Info_String(gene_info_string)
+					self.dict_Chr_dict_Transcript[gene_seqid][transcript.IndexKey] = transcript
+					self.List_Of_Transcripts[gene_seqid].append(transcript)
 
 	def GetNextTranscriptIndex (self):
 		"""
