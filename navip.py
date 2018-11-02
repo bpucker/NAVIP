@@ -74,20 +74,37 @@ readmetext = "NAVIP has three existing modules: VCF preprocessing, the NAVIP mai
 
 if __name__ == '__main__':
 
+    
     sleep(2) # time for creating directories. sometimes useful if python is to fast
     if "--mode" in sys.argv:
         args = sys.argv
+        overwriting = False
+        if "--ow" in sys.argv:
+            overwriting = True
         if args[args.index("--mode")+1] == "pre" \
                 and "--invcf" in args \
                 and "--outpath" in args:
             print("Start: VCF preprocessing")
+            if not overwriting:
+                try:
+                    file = open(args[args.index("--outpath") + 1] + "first.vcf", "r")
+                    file.close()
+                    sys.exit(args[args.index("--outpath") + 1] + "first.vcf is already existing.")
+                except:
+                    pass
+                try:
+                    file = open(args[args.index("--outpath") + 1] + "second.vcf", "r")
+                    file.close()
+                    sys.exit(args[args.index("--outpath") + 1] + "second.vcf is already existing.")
+                except:
+                    pass
             try:
                 file = open(args[args.index("--invcf")+1],'r')
                 file.close()
-                file = open(args[args.index("--outpath")+1] + "try-file", "w")
+                file = open(args[args.index("--outpath")+1] + "try-file-for-exceptions", "w")
                 file.write("test")
                 file.close()
-                os.remove(args[args.index("--outpath")+1] + "try-file")
+                os.remove(args[args.index("--outpath")+1] + "try-file-for-exceptions")
             except FileNotFoundError:
                 e = sys.exc_info()[0]
                 sys.exit(e)
@@ -108,6 +125,26 @@ if __name__ == '__main__':
                 and "--infasta" in args \
                 and "--outpath" in args:
             print("Start: NAVIP")
+            if not overwriting:
+                try:
+                    file = open(args[args.index("--outpath") + 1] + "all_transcripts_data.fa", "r")
+                    file.close()
+                    sys.exit(args[args.index("--outpath") + 1] + "all_transcripts_data.fa is already existing.")
+
+                except:
+                    pass
+                try:
+                    file = open(args[args.index("--outpath") + 1] + "all_transcripts_data_damaged.txt", "r")
+                    file.close()
+                    sys.exit(args[args.index("--outpath") + 1] + "all_transcripts_data_damaged.txt is already existing.")
+                except:
+                    pass
+                try:
+                    file = open(args[args.index("--outpath") + 1] + "All_VCF.vcf", "r")
+                    file.close()
+                    sys.exit(args[args.index("--outpath") + 1] + "All_VCF.vcf is already existing.")
+                except:
+                    pass
             try:
                 file = open(args[args.index("--invcf")+1],'r')
                 file.close()
@@ -115,10 +152,10 @@ if __name__ == '__main__':
                 file.close()
                 file = open(args[args.index("--infasta") + 1], 'r')
                 file.close()
-                file = open(args[args.index("--outpath")+1] + "try-file", "w")
+                file = open(args[args.index("--outpath")+1] + "try-file-for-exceptions", "w")
                 file.write("test")
                 file.close()
-                os.remove(args[args.index("--outpath")+1] + "try-file")
+                os.remove(args[args.index("--outpath")+1] + "try-file-for-exceptions")
             except FileNotFoundError:
                 e = sys.exc_info()[0]
                 sys.exit(e)
@@ -140,15 +177,23 @@ if __name__ == '__main__':
                 and "--innavipfasta" in args\
                 and "--outpath" in args:
             print("Start: simple first analysis")
+            if not overwriting:
+                try:
+                    file = open(args[args.index("--outpath") + 1] + "no_NONE.vcf", "r")
+                    file.close()
+                    sys.exit("There already exist some output-data in: " + args[args.index("--outpath") + 1])
+
+                except:
+                    pass
             try:
                 file = open(args[args.index("--innavipvcf")+1],'r')
                 file.close()
                 file = open(args[args.index("--innavipfasta") + 1], 'r')
                 file.close()
-                file = open(args[args.index("--outpath")+1] + "try-file", "w")
+                file = open(args[args.index("--outpath")+1] + "try-file-for-exceptions", "w")
                 file.write("test")
                 file.close()
-                os.remove(args[args.index("--outpath")+1] + "try-file")
+                os.remove(args[args.index("--outpath")+1] + "try-file-for-exceptions")
             except FileNotFoundError:
                 e = sys.exc_info()[0]
                 sys.exit(e)
@@ -158,6 +203,7 @@ if __name__ == '__main__':
             except :
                 e = sys.exc_info()[0]
                 sys.exit(e)
+            #doku for all files, new names, too (better files, too)
             sfa.sfa_main(args[args.index("--innavipvcf") + 1],
                         args[args.index("--innavipfasta") + 1],
                         args[args.index("--outpath") + 1])
@@ -176,4 +222,4 @@ if __name__ == '__main__':
     else:
         print("Arguments are invalid."
               "\nPlease look into the Readme.txt or create a new one with \"--read\"")
-    print(sys.argv)
+    #print(sys.argv)
