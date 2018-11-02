@@ -33,6 +33,7 @@ class TranscriptEnum (Enum):
 	STOP_GAINED = "Stop gained"
 	STOP_LOST = "Stop lost"
 	STOP_CHANGED = "Stop changed"
+	STOP_CAUSED_IN = "STOP_CAUSED_IN:".lower()
 	AA_CHANGE = "Amino acid change"
 	START_LOST = "Start lost"
 
@@ -90,6 +91,7 @@ class Variant_Information_Storage:
 		self.ChangedRevTriplets = ""
 		self.NewAmino = ""
 
+		self.STOP_CAUSED_IN = -1
 		self.SharedEffectsWith = []
 
 	def SetUnchanged_CDS_Position(self, Unchanged_CDS_Position:int):

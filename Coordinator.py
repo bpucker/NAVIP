@@ -96,6 +96,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					class_list_length = len(class_list)
 					for i in range(0, class_list_length):
 						classificationstring += class_list[i].value
+						if class_list[i] == TranscriptEnum.STOP_CAUSED_IN:
+							classificationstring += str(vinfo.STOP_CAUSED_IN)
 						if i != (class_list_length - 1):  # no tab after last entry
 							classificationstring += ","
 						elif i == (class_list_length - 1):
@@ -836,6 +838,40 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			while currentTranscript.origDNAtoshort:
 				print(currentTranscript.TID)
 				currentTranscript.checkLastVariants(ghandler, genetic_code, stopcodon)
+
+	### Find Stop-Codons, if hey are made by a frameshift -> LABEl the mutation
+	for name in Shared_Chromosomes:
+		aTranscriptDict = gff3.GetChrTranscriptsDict(name)
+		for currentTranscript in aTranscriptDict.values():
+			currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
+			if not currentTranscript.CDS_Exist:
+				continue
+			if currentTranscript.Transcript_CDS_damaged:
+				continue
+			firstStopPosition = currentTranscript.IV_ChangedTranslation.find(stopcodon)*3
+			if firstStopPosition == -1:
+				continue
+			last_frameshifter = ""
+			for variant in currentTranscript.IntegratedVariantObjects_CDS_Hits:
+				variant = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(variant)
+				if TranscriptEnum.STOP_GAINED in variant.Classification \
+					or TranscriptEnum.STOP_CHANGED in variant.Classification: # stop because of variants
+					last_frameshifter = ""
+					break
+				if variant.Changed_CDS_Position < firstStopPosition:
+					if (len(variant.Ref) -1)%3 != 0 or (len(variant.Alt) -1)%3 != 0: # only frameshift and caused no stop
+						if TranscriptEnum.STOP_GAINED not in variant.Classification \
+							and TranscriptEnum.STOP_CHANGED not in variant.Classification:
+							last_frameshifter = variant
+					continue
+				else:
+					break
+			if last_frameshifter == "":
+				continue
+			else:
+				last_frameshifter.Classification.append(TranscriptEnum.STOP_CAUSED_IN)
+				last_frameshifter.STOP_CAUSED_IN = firstStopPosition - last_frameshifter.Changed_CDS_Position
+
 
 
 	print("Done: " + str(datetime.now() - timeStart))
