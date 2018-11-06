@@ -652,7 +652,6 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			Shared_Chromosomes_FA_GFF3.append(name)
 	print("Shared_Chromosomes(all):" + str(Shared_Chromosomes))
 	#print("Shared_Chromosomes, fasta, gff3 (and used):" + str(Shared_Chromosomes_FA_GFF3))
-
 	### For Writing the CDS
 	### in all transcripts
 
@@ -836,10 +835,18 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				# repeatly, and check if deletions now have a new effect, because in rev cds it can be .... .... ....
 				# and it is possible, that damaged transcripts (rev cds) is still functional because of this, meeeh fuck it
 			while currentTranscript.origDNAtoshort:
-				print(currentTranscript.TID)
+				#print(currentTranscript.TID)
 				currentTranscript.checkLastVariants(ghandler, genetic_code, stopcodon)
 
+
+
+	print("Done: " + str(datetime.now() - timeStart))
+	####################################################
+	print("Complete AA sequences")
+	Create_Sequences(gff3, Orig_AA, New_AA, genetic_code)
+	print("Done: " + str(datetime.now() - timeStart))
 	### Find Stop-Codons, if hey are made by a frameshift -> LABEl the mutation
+	print("Flag Frameshift caused stops")
 	for name in Shared_Chromosomes:
 		aTranscriptDict = gff3.GetChrTranscriptsDict(name)
 		for currentTranscript in aTranscriptDict.values():
@@ -848,20 +855,21 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				continue
 			if currentTranscript.Transcript_CDS_damaged:
 				continue
-			firstStopPosition = currentTranscript.IV_ChangedTranslation.find(stopcodon)*3
-			if firstStopPosition == -1:
+			firstStopPosition = currentTranscript.IV_ChangedTranslation.find(stopcodon) * 3
+			if firstStopPosition == -3:
 				continue
 			last_frameshifter = ""
 			for variant in currentTranscript.IntegratedVariantObjects_CDS_Hits:
 				variant = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(variant)
 				if TranscriptEnum.STOP_GAINED in variant.Classification \
-					or TranscriptEnum.STOP_CHANGED in variant.Classification: # stop because of variants
+						or TranscriptEnum.STOP_CHANGED in variant.Classification:  # stop because of variants
 					last_frameshifter = ""
 					break
 				if variant.Changed_CDS_Position < firstStopPosition:
-					if (len(variant.Ref) -1)%3 != 0 or (len(variant.Alt) -1)%3 != 0: # only frameshift and caused no stop
+					if (len(variant.Ref) - 1) % 3 != 0 or (
+						len(variant.Alt) - 1) % 3 != 0:  # only frameshift and caused no stop
 						if TranscriptEnum.STOP_GAINED not in variant.Classification \
-							and TranscriptEnum.STOP_CHANGED not in variant.Classification:
+								and TranscriptEnum.STOP_CHANGED not in variant.Classification:
 							last_frameshifter = variant
 					continue
 				else:
@@ -871,13 +879,6 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			else:
 				last_frameshifter.Classification.append(TranscriptEnum.STOP_CAUSED_IN)
 				last_frameshifter.STOP_CAUSED_IN = firstStopPosition - last_frameshifter.Changed_CDS_Position
-
-
-
-	print("Done: " + str(datetime.now() - timeStart))
-	####################################################
-	print("Complete AA sequences")
-	Create_Sequences(gff3, Orig_AA, New_AA, genetic_code)
 	print("Done: " + str(datetime.now() - timeStart))
 	#################################################################
 	print("Complete Data check.")

@@ -357,15 +357,12 @@ class Transcript:
 					first = self.IV_Changed_DNA_CDS_Seq[0:firstkoord]
 				else:
 					first = ""
-				meh = len(self.IV_Changed_DNA_CDS_Seq)
-				if self.TID == 'AT4G19730.1':
-					print("bugsearch AT4G19730.1")
-					meh2 = self.IV_Changed_DNA_CDS_Seq[meh-10:]
 				test = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position - 1]
 				if test != ref:
 					LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
 																"Error 1: SUB not identical with Ref: " + str(
 																	self.TID) + " " + str(vinfo.ChrPosition) + " " + str(self.ForwardDirection) + "\n")
+
 					#asdasdasdasd = self.IV_Changed_DNA_CDS_Seq[1128]
 					#asdasdasdasd2 = self.IV_Changed_DNA_CDS_Seq[1125:1135]
 					#print("Error 1: SUB not identical with Ref: " + str(self.TID) + " " + str(vinfo.ChrPosition))
@@ -396,7 +393,7 @@ class Transcript:
 
 					second = self.IV_Changed_DNA_CDS_Seq[cds_position + dellength + current_additional_position -1:]
 					if second[0] != ref[len(ref) - 1]:
-						LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,"Error 2: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition) + "\n" )
+						LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,"Error 2: DEL not identical with Ref: " + str(self.TID) +"\t"+ str(vinfo.ChrPosition) + "\n" )
 						#print("Error 2: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition))
 
 				else:
@@ -405,7 +402,7 @@ class Transcript:
 					second = self.IV_Changed_DNA_CDS_Seq[cds_position + current_additional_position + dellength:]
 					if first != "":
 						if first[len(first) - 1] != ref[0]:
-							LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error 3: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition) + "\n")
+							LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error 3: DEL not identical with Ref: " + str(self.TID) +"\t"+ str(vinfo.ChrPosition) + "\n")
 							#print("Error 3: DEL not identical with Ref: " + str(self.TID) + str(vinfo.ChrPosition))
 
 				self.IV_Changed_DNA_CDS_Seq = first + second
@@ -947,6 +944,8 @@ class Transcript:
 		# new stop position
 		# dna to this code -< append changed_cds
 		###
+		if self.TID == "AT1G09790.1":
+			print("bugtest AT1G09790.1 count")
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			if currentRaster == 0:
 				dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + nextDNA
@@ -1591,6 +1590,8 @@ class Transcript:
 		# +2 positions means 2 potential more variant effects.
 		# repeatly, and check if deletions now have a new effect, because in rev cds it can be .... .... ....
 		# should be done, because the transcript gets reseted after getting larger cds
+		if self.TID == "AT1G09790.1":
+			print("count AT1G09790.1 bugsearch")
 		if len(self.IV_Changed_DNA_CDS_Seq) % 3 != 0:
 			raster = For_Type_Safety_and_statics.calculateRaster(len(self.IV_Changed_DNA_CDS_Seq)) # 2 is impossible, 1 == +1 base, 0 == +2 base
 		elif len(self.Complete_CDS) % 3 != 0:
@@ -1624,7 +1625,7 @@ class Transcript:
 		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			oldLastCDSPosition = self.LastCDSPosition
 			self.change_Last_CDS_Position(erg)
-			seqToAdd = genomehandler.seq(self.Chr, self.LastCDSPosition+1, oldLastCDSPosition)
+			seqToAdd = genomehandler.seq(self.Chr, self.LastCDSPosition, oldLastCDSPosition-1)
 			self.Complete_CDS = seqToAdd + self.Complete_CDS
 			self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(seqToAdd)
 			self.IV_Changed_DNA_CDS_Seq += For_Type_Safety_and_statics.BioReverseSeq(seqToAdd)
