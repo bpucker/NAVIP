@@ -784,7 +784,6 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			name)  # self.dictListOfTranscripts = [{}] # List for chromosomes, dict for normal entrys
 		for currentTranscript in aTranscriptDict.values():
 			currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
-
 			if not currentTranscript.CDS_Exist:
 				continue
 			if currentTranscript.Transcript_CDS_damaged:
@@ -855,8 +854,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				continue
 			if currentTranscript.Transcript_CDS_damaged:
 				continue
-			firstStopPosition = currentTranscript.IV_ChangedTranslation.find(stopcodon) * 3
-			if firstStopPosition == -3:
+			firstStopPosition = (currentTranscript.IV_ChangedTranslation.find(stopcodon)+1) * 3
+			if firstStopPosition == -2:
 				continue
 			last_frameshifter = ""
 			for variant in currentTranscript.IntegratedVariantObjects_CDS_Hits:

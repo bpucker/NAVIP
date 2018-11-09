@@ -431,6 +431,7 @@ class Transcript:
 		#
 		###
 		for vinfo in IntegratedVariantObjects:
+			self.origDNAtoshort = False
 			self.IV_Local_Classification(vinfo, genetic_code, stopcodon)
 			self.IV_Local_Effect_Length(vinfo)
 
@@ -854,10 +855,9 @@ class Transcript:
 			vinfo.Classification.append(TranscriptEnum.AA_CHANGE)
 		if stopcodon in self.IV_ChangedTranslation:
 			self.Lost_Stop = False
-		if len(vinfo.OrigTriplets) % 3 != 0:
-			self.origDNAtoshort = True
-		else:
-			self.origDNAtoshort = False
+		if len(vinfo.ChangedTriplets) % 3 != 0 or len(vinfo.OrigTriplets) % 3 != 0 or len(vinfo.OrigRevTriplets) % 3 != 0 or len(vinfo.ChangedRevTriplets) % 3 != 0:
+			self.origDNAtoshort = True # not really orgiDNA, others too, but hey, it works
+
 
 
 	def IV_Local_Effect_Length(self, vinfo: Variant_Information_Storage):
@@ -944,8 +944,6 @@ class Transcript:
 		# new stop position
 		# dna to this code -< append changed_cds
 		###
-		if self.TID == "AT1G09790.1":
-			print("bugtest AT1G09790.1 count")
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			if currentRaster == 0:
 				dnaToTest = self.IV_Changed_DNA_CDS_Seq[len(self.IV_Changed_DNA_CDS_Seq)-1] + nextDNA
@@ -992,6 +990,10 @@ class Transcript:
 			self.Found_New_Stop = True
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
 				self.IV_Changed_DNA_CDS_Seq += nextDNA[0:(1 + position_in_string) * 3 - oldDNA]
+				self.change_Last_CDS_Position((1 + position_in_string) * 3 - oldDNA)
+				self.Complete_CDS += nextDNA[0:(1 + position_in_string) * 3 - oldDNA]
+				self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(nextDNA[0:(1 + position_in_string) * 3 - oldDNA])
+				"""
 				more = len(self.Complete_CDS + nextDNA[0:(1+position_in_string)*3 - oldDNA]) % 3
 				if more == 0:
 					more = 0
@@ -1003,7 +1005,14 @@ class Transcript:
 				self.change_Last_CDS_Position((1+position_in_string)*3 -oldDNA + more)
 				self.Complete_CDS += nextDNA[0:more + (1+position_in_string)*3 - oldDNA]
 				self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(nextDNA[0:(1 + position_in_string) * 3 - oldDNA])
+				"""
 			else:
+				revdna = For_Type_Safety_and_statics.BioReverseSeq(nextDNA)[0:(1 + position_in_string) * 3 - oldDNA]
+				self.IV_Changed_DNA_CDS_Seq += revdna
+				self.Rev_CDS += revdna
+				self.Complete_CDS = For_Type_Safety_and_statics.BioReverseSeq(revdna) + self.Complete_CDS
+				self.change_Last_CDS_Position((1 + position_in_string) * 3 - oldDNA)
+				"""
 				revdna = For_Type_Safety_and_statics.BioReverseSeq(nextDNA)[0:(1 + position_in_string) * 3 - oldDNA]
 				self.IV_Changed_DNA_CDS_Seq += revdna
 				#more = (len(self.Rev_CDS) + len(revdna) -oldDNA) % 3
@@ -1020,6 +1029,7 @@ class Transcript:
 				self.Complete_CDS = nextDNA[::-1][0:(1 + position_in_string) * 3 - more - oldDNA][::-1] + self.Complete_CDS
 				#self.LastCDSPosition -= (1 + position_in_string) * 3 - oldDNA - more
 				self.change_Last_CDS_Position((1 + position_in_string) * 3 - oldDNA - more)
+				"""
 			self.IV_Check_For_New_Variants(genetic_code, stopcodon)
 		else:
 
@@ -1590,8 +1600,6 @@ class Transcript:
 		# +2 positions means 2 potential more variant effects.
 		# repeatly, and check if deletions now have a new effect, because in rev cds it can be .... .... ....
 		# should be done, because the transcript gets reseted after getting larger cds
-		if self.TID == "AT1G09790.1":
-			print("count AT1G09790.1 bugsearch")
 		if len(self.IV_Changed_DNA_CDS_Seq) % 3 != 0:
 			raster = For_Type_Safety_and_statics.calculateRaster(len(self.IV_Changed_DNA_CDS_Seq)) # 2 is impossible, 1 == +1 base, 0 == +2 base
 		elif len(self.Complete_CDS) % 3 != 0:
@@ -1599,6 +1607,8 @@ class Transcript:
 		elif len(self.Rev_CDS) % 3 != 0:
 			raster = For_Type_Safety_and_statics.calculateRaster(len(self.Rev_CDS))
 		else:
+			erg = 3
+			raster = 2
 			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
 								  "checkLastVariants\t" + str(self.TID) + "\tIV_Changed_DNA_CDS_Seq\n")
 			pass
@@ -1645,6 +1655,24 @@ class For_Type_Safety_and_statics:
 	It is more comfortable to use python, when the IDE knows, which type the current variables are.
 	Furthermore it has a variety of methods which are used often.
 	"""
+
+	@staticmethod
+	def bp_to_add_because_of_raster(VariantPositionInsideCDS: int) -> int:
+
+		"""
+		:param VariantPositionInsideCDS: self-explanatory.
+		:return: 0,1 or 2 for bp to add to complete the triplet.
+		"""
+		"""
+		Example		Pos in Codon || bp to add
+		(4-1) % 3 -> 0				2
+		(5-1) % 3 -> 1				1
+		(6-3) % 3 -> 2				0
+		"""
+		to_add_dict = {0:2 , 1:1 , 2:0}
+		to_add = (VariantPositionInsideCDS -1) % 3
+		to_add = to_add_dict[to_add]
+		return to_add
 
 	@staticmethod
 	def Variant_Information_Storage_Type_Safety(vinfo: Variant_Information_Storage) -> Variant_Information_Storage:
