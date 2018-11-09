@@ -11,37 +11,6 @@ except ModuleNotFoundError:
     print("ModuleNotFoundError")
     print(str(sys.exc_info()[0]))
 
-example_pre = "\"python3 navip.py --mode pre --invcf /prj/gf-arabseq/project_VariantAnnotation/data/20160806_small_variants.vcf" \
-              " --outpath /prj/gf-arabseq/project_VariantAnnotation/data/VCF_Preprocessing/\""
-
-example_main = "\"python3 navip.py --mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/data/VCF_Preprocessing/first.vcf" \
-               " --ingff /prj/gf-arabseq/data/Araport11_official_release/Araport11_GFF3_genes_transposons.201606.gff" \
-               " --infasta /prj/gf-arabseq/data/TAIR10/TAIR10.fa" \
-               " --outpath /prj/gf-arabseq/project_VariantAnnotation/data/NAVIP_Main_Output/\""
-
-example_sfa = "\"python3 navip.py --mode sfa --innavipvcf /prj/gf-arabseq/project_VariantAnnotation/data/NAVIP_Main_Output/All_VCF.vcf" \
-              " --innavipfasta /prj/gf-arabseq/project_VariantAnnotation/data/NAVIP_Main_Output/all_transcripts_data.fa" \
-              " --outpath /prj/gf-arabseq/project_VariantAnnotation/data/SFA_Output/\""
-
-readmetext = "NAVIP has three existing modules: VCF preprocessing, the NAVIP main program and one simple first analysis of the created data.\n" \
-             "You can choose the module with \"--mode <module>\".\n" \
-             "The module shortcuts are \"pre\",\"main\" and \"sfa\" and there is a vcf-format-check \"vcfc\".\n\n" \
-             "For the VCF-Check: \"--mode vcfc --invcf <path_with_file>\"\n\n"\
-             "VCF preprocessing needs two more arguments:" \
-             "\n \"--invcf <path_with_file>\" and \"--outpath <path_to_folder>\" \n" \
-             "Please be aware, that no new folder will be created." \
-             " \n\n" \
-             "The NAVIP main program needs four arguments:\n" \
-             "\"--invcf <path_with_file>\", \"--ingff <path_with_file>\", \"--infasta <path_with_file>\" " \
-             "and \"--outpath <path_to_folder>\"\n" \
-             "The best possible output will be available, when the VCF file is 'corrected' by the preprozessing. However, NAVIP will still be able to deal with most of the 'normal' VCF data and will do its best.\n" \
-             "\n" \
-             "The SFA module needs three arguments:\n" \
-             "\"--innavipvcf <path_with_file>\",\"--innavipfasta <path_with_file>\" and \"--outpath <path_to_folder>\"\n\n" \
-             "Example: VCF preprocessing:\n" + example_pre + "\n\n" \
-             "Example: NAVIP main:\n" + example_main + "\n\n"\
-             "Example: SFA:\n" + example_sfa + "\n"
-
 
 #pre == vcf preprocessing
 #   input:  one vcf file, path to output folder
@@ -214,12 +183,8 @@ if __name__ == '__main__':
 
         else:
             print("Arguments are invalid."
-                  "\nPlease look into the Readme.txt or create a new one with \"--read\"")
-    elif "--read" in sys.argv:
-        readme = open("Readme.txt","w")
-        readme.write(readmetext)
-        readme.close()
+                  "\nPlease look into the Readme.txt.")
     else:
         print("Arguments are invalid."
-              "\nPlease look into the Readme.txt or create a new one with \"--read\"")
+              "\nPlease look into the Readme.txt.")
     #print(sys.argv)
