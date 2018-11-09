@@ -669,7 +669,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		for trancript in gff3.GetChrTranscriptsDict(name).values():
 			trancript.CompleteTheCDS(ghandler.seq(name, trancript.StartOfRNA, trancript.EndOfRNA), genetic_code)
 			if trancript.ForwardDirection == TranscriptEnum.REVERSE:
-				trancript.ReverseTheCDS()
+				trancript.ReverseTheCDS(genetic_code)
 
 
 	print("Done: " + str(datetime.now() - timeStart))

@@ -1361,7 +1361,7 @@ class Transcript:
 		self.uChDNAsequence = self.Complete_CDS
 		self.uChAAsequence = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(self.uChDNAsequence),genetic_code)
 
-	def ReverseTheCDS(self) -> bool:
+	def ReverseTheCDS(self, genetic_code:dict) -> bool:
 		"""
 		This will reverse the existing Complete_CDS for reverse direction transcripts.
 		:return: False, if there is no Complete_CDS. True  if it succeded.
@@ -1381,7 +1381,7 @@ class Transcript:
 			self.Rev_CDS = self.Rev_CDS[::-1] #reverse #
 			self.Rev_CDS_Exist = True
 			self.uChDNAsequence = self.Rev_CDS
-			self.uChAAsequence = For_Type_Safety_and_statics.Transcription(self.Rev_CDS)
+			self.uChAAsequence = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(self.uChDNAsequence),genetic_code)
 			return True
 
 	def SearchPositionInCDS(self, PositionInChr: int) -> int:
