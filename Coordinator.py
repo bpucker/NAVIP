@@ -3,7 +3,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 
 import copy #to copy objects
-from GenomHandler import GenomHandler, Fasta_Enum
+from GenomeHandler import GenomeHandler, Fasta_Enum
 from VCF_Handler import VCF_HANDLER
 from VCF_Variant import Variant, VariantEnum
 from Transcript import Transcript, TranscriptEnum, For_Type_Safety_and_statics
@@ -218,7 +218,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				if New_AA:
 					currentTranscript.Create_IV_ChangedTranslation(genetic_code)
 
-	def Complete_Check(gff3: GFF3_Handler_V3, ghandler: GenomHandler):
+	def Complete_Check(gff3: GFF3_Handler_V3, ghandler: GenomeHandler):
 		"""
 		Its always a good idea to test the data in the end.
 		Will print warnings, if there is incorrect data.
@@ -634,7 +634,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	print("Done: " + str(datetime.now() - timeStart))
 	#######################################
 	print("read fa")
-	ghandler = GenomHandler(fasta_FILE_PATH, firstxChr)
+	ghandler = GenomeHandler(fasta_FILE_PATH, firstxChr)
 	print("Done: " + str(datetime.now() - timeStart))
 	#######################################
 	print("Chromosome:Names")

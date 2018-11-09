@@ -5,7 +5,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 from enum import Enum, unique
 from VCF_Variant import Variant,VariantEnum
 from LogOrganizer import LogEnums, LogOrganizer
-from GenomHandler import GenomHandler
+from GenomeHandler import GenomeHandler
 
 
 
@@ -1586,7 +1586,7 @@ class Transcript:
 				   StartPosNewCDS -1 :
 				   StartPosNewCDS + abs(StartPosNewCDS - EndPosNewCDS)]
 
-	def checkLastVariants(self, genomehandler: GenomHandler,genetic_code, stopcodon):
+	def checkLastVariants(self, genomehandler: GenomeHandler, genetic_code, stopcodon):
 		# +2 positions means 2 potential more variant effects.
 		# repeatly, and check if deletions now have a new effect, because in rev cds it can be .... .... ....
 		# should be done, because the transcript gets reseted after getting larger cds
