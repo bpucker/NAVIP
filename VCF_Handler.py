@@ -20,7 +20,6 @@ class VCF_HANDLER:
 		#Initialization
 		self.VCF_ListChromosomes = [[[]]]
 		self.VCF_Variant_List = [[]] # => Genom: [ Chromosome: [Variant(s)] ]
-		self.VCF_Dict_Variant_List = [{}] # For each Chromosome one dictionary will all its variants. the dcits in a list
 		self.dictChrNames = {}
 
 		countChr = 0
@@ -33,7 +32,6 @@ class VCF_HANDLER:
 			ChromosomFlag =  lines.split('\t' , 1)[0]
 			CurrentList = [[]]
 			CurrentVariantList = []
-			CurrentVariantDict = {}
 			CountVariant = 0
 
 			# for easy name-id relation
@@ -67,8 +65,6 @@ class VCF_HANDLER:
 											  )
 
 					CurrentVariantList.append(varianti)
-					CurrentVariantDict[CountVariant] = varianti
-					CurrentVariantDict[varianti.Chromosome + "." + str(varianti.Position)] = varianti
 
 					CountVariant += 1
 
@@ -89,8 +85,6 @@ class VCF_HANDLER:
 					self.VCF_Variant_List.append(CurrentVariantList)
 					CurrentVariantList = []
 
-					self.VCF_Dict_Variant_List.append(CurrentVariantDict)
-					CurrentVariantDict = {}
 
 					if (countChr >= JustXChromosomes and  JustXChromosomes != 0 ) :
 						break
@@ -105,8 +99,6 @@ class VCF_HANDLER:
 				CurrentList = [[]]
 				self.VCF_Variant_List.append(CurrentVariantList)
 				CurrentVariantList = []
-				self.VCF_Dict_Variant_List.append(CurrentVariantDict)
-				CurrentVariantDict = {}
 
 
 
@@ -121,8 +113,6 @@ class VCF_HANDLER:
 			if self.VCF_Variant_List[0] == []:
 				self.VCF_Variant_List.pop(0)
 
-			if self.VCF_Dict_Variant_List[0] == {}:
-				self.VCF_Dict_Variant_List.pop(0)
 
 			DataFile.close()
 
@@ -152,24 +142,3 @@ class VCF_HANDLER:
 			return self.VCF_Variant_List[self.dictChrNames[ChrName]]
 		except KeyError as e:
 			return []
-
-	def GetChrDict_Variants(self, ChrName: str):
-		"""
-		Returns a dictionary of variants from the specified chromosome.
-		:param ChrName: Chromosome name.
-		:return: A dictionary of variants from the specified chromosome.
-		"""
-		if (self.VCF_Dict_Variant_List[0] == {}) :
-			self.VCF_Dict_Variant_List.pop(0)
-		return self.VCF_Dict_Variant_List[self.dictChrNames[ChrName]]
-
-	def GetOneVariant (self, ChrName: str, VariantID: int) -> VCF_Variant:
-		"""
-		Returns one variant from one chromosome.
-		:param ChrName: Chromosome name.
-		:param VariantID: Usefull ID from the variant.
-		:return: The VCF_Variant object.
-		"""
-		if (self.VCF_Dict_Variant_List[0] == {}) :
-			self.VCF_Dict_Variant_List.pop(0)
-		return self.VCF_Dict_Variant_List[self.dictChrNames[ChrName]][VariantID]
