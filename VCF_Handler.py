@@ -142,3 +142,53 @@ class VCF_HANDLER:
 			return self.VCF_Variant_List[self.dictChrNames[ChrName]]
 		except KeyError as e:
 			return []
+
+
+class NAVIP_VCF_File_Manager():
+	def __init__(self, navip_file_path: str):
+		vcf_handler = VCF_HANDLER(navip_file_path,0)
+		self.chr_list = vcf_handler.GetChromosomeNames()
+		self.variants_in_list_in_dict = {}
+		for name in self.chr_list:
+			if name not in self.variants_in_list_in_dict.keys():
+				self.variants_in_list_in_dict[name] = []
+			for v_list in vcf_handler.GetChr_VCF_Variant_List(name):
+				for variant in v_list:
+					self.variants_in_list_in_dict[name].add(VCF_Variant.Variant_NAVIP(variant))
+
+	def merge_with_another_navip_file_manager(self,navip_file_manager):
+		# needs a check, if the new file manager has chr entrys, which the current does not have.
+		# they can easily be added
+		merged_dict = {}
+		for name in self.chr_list:
+			if name not in navip_file_manager.chr_list:
+				continue
+
+			v_in_list_in_dict = {}
+			for variant in self.variants_in_list_in_dict[name]:
+				try:
+					v_in_list_in_dict[variant.Chromosome, variant.Position].add(variant)
+				except KeyError:
+					v_in_list_in_dict[variant.Chromosome, variant.Position] = [variant]
+			for variant in self.chr_list[name]:
+				try:
+					v_in_list_in_dict[variant.Chromosome, variant.Position].add(variant)
+				except KeyError:
+					v_in_list_in_dict[variant.Chromosome, variant.Position] = [variant]
+			for position in v_in_list_in_dict.keys():
+				v_dict = {}
+				for variant in v_in_list_in_dict[position]:
+					v_dict[variant.Info] = variant #overwrite, if present == identical
+				v_in_list_in_dict[position] = list(v_dict)
+			merged_dict[name] = v_in_list_in_dict
+			# so its here a dict with entrys per chromosome.
+			# in this entrys are dicts with entrys for every position
+			# in this entrys are lists with all unique, merged variants
+
+		final_new_variants_in_list_in_dict = {}
+		for name in merged_dict.keys(): # name keys
+			for variant_in_list_in_dict_per_position in merged_dict[name]: #dict with list-entry for positions
+				for postion in variant_in_list_in_dict_per_position.keys(): #position keys
+					print ("experimental")
+
+
