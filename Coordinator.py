@@ -10,7 +10,7 @@ from Transcript import Transcript, TranscriptEnum, For_Type_Safety_and_statics
 from Gff3_Handler import GFF3_Handler_V3
 from datetime import datetime
 from LogOrganizer import LogOrganizer, LogEnums
-
+from snpeff_hgvs_converter import snpeff_hgvs_converter
 
 def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	"""
@@ -50,12 +50,12 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		"""
 		# chrom	Pos	ID	Ref	Alt Info
 		vcf_file = open(data_path + "All_VCF" + ".vcf", "w")
-		vcf_file.write("#All Data Output\n")
-		vcf_file.write("#Please note, that the Variant_Position_in_Codon is read from left to right in forward "
+		vcf_file.write("##All Data Output\n")
+		vcf_file.write("##Please note, that the Variant_Position_in_Codon is read from left to right in forward "
 					   "and rigth to left in reverse strand direction.\n")
-		vcf_file.write("#Chrom\tPos\tID\tRef\tAlt\tQual\tFilter\tInfo\n")
-		vcf_file.write("#When complete output is allowed, the Info field is constructed like this:\n")
-		vcf_file.write("#Info:TranscriptID|"
+		vcf_file.write("##Chrom\tPos\tID\tRef\tAlt\tQual\tFilter\tInfo\n")
+		vcf_file.write("##When complete output is allowed, the Info field is constructed like this:\n")
+		vcf_file.write("##Info:TranscriptID|"
 					   "Strand_Direction|"
 					   "Variant_Classification1,Variant_Classification2,...|"
 					   "Shared_EffKey(s)|"
@@ -67,8 +67,9 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					   "new_CDS_Position|"
 					   "NAVIP_END|"
 					   "<old info field>\n")
-		vcf_file.write("#If there are no shared effect keys, the value is:\"NONE\".\n")
+		vcf_file.write("##If there are no shared effect keys, the value is:\"NONE\".\n")
 		data_to_write = []
+		infoline_parser = snpeff_hgvs_converter
 		for name in gff3.GetChromosomeNames():
 			for transcriptHier in gff3.GetChrTranscriptsDict(name).values():
 				transcriptHier = For_Type_Safety_and_statics.Transcript_Type_Safety(transcriptHier)
@@ -91,6 +92,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 
 				for vinfo in transcriptHier.IntegratedVariantObjects_CDS_Hits:
 					vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
+					snpeff_string = infoline_parser.convert_main(infoline_parser,transcriptHier,vinfo)
 					classificationstring = ""
 					class_list = vinfo.Classification
 					class_list_length = len(class_list)
@@ -167,7 +169,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					if Alt_AA:
 						NAVIP_INFO_LIST.append(str(vinfo.NewAmino) + "|")
 					NAVIP_INFO_LIST.append(str(vinfo.Changed_CDS_Position) + "|")
-					NAVIP_INFO_LIST.append("NAVIP_END|")
+					NAVIP_INFO_LIST.append("NAVIP_END;")
 					if Old_Info:
 						if "\n" in vinfo.OLD_Info:
 							NAVIP_INFO_LIST.append(str(vinfo.OLD_Info))
@@ -185,6 +187,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						+ str(vinfo.Alt) + "\t"
 						+ str(vinfo.Qual) + "\t"
 						+ str(vinfo.Filter) + "\t"
+						+ snpeff_string + ";"
 						+ str(NAVIP_INFO))
 			data_to_write = sorted(data_to_write,
 								   key=lambda data_line: (int(data_line.split("\t")[1]), str(data_line.split("\t")[7])))
