@@ -36,6 +36,7 @@ class TranscriptEnum (Enum):
 	STOP_CAUSED_IN = "STOP_CAUSED_IN:".lower()
 	AA_CHANGE = "Amino acid change"
 	START_LOST = "Start lost"
+	MISSENSE_VARIANT = "MISSENSE_VARIANT".lower() # http://sequenceontology.org/browser/current_svn/term/SO:0001583
 
 	# when the transcript structure is damaged
 	CDS_START_INVOLVED = "Hits before Start into CDS"
@@ -153,9 +154,11 @@ class Transcript:
 		self.Gene_Start_Position = 0
 		self.Gene_End_Position = 0
 
-		#original not changed sequence of the transcript
+		#original not changed data an sequence of the transcript
 		self.uChDNAsequence = ""
 		self.uChAAsequence = ""
+		self.uChDNA_length = 0
+		self.uChAA_length = 0
 
 
 		# for integrated variants action:
@@ -168,6 +171,9 @@ class Transcript:
 		self.IV_ChangedTranslation = ""
 		self.IV_Count_Stops_in_New_AA = -1
 		self.IV_ListOfEffects = []
+		self.IV_DNA_length = 0
+		self.IV_AA_length = 0
+
 
 		# state's of transcript
 		self.TID_locked = False  # for changing TID because of more than one multi_allel_variants
@@ -287,9 +293,11 @@ class Transcript:
 
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			self.IV_ChangedTranslation = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(self.IV_Changed_DNA_CDS_Seq), genetic_code)
+			self.IV_AA_length = len(self.IV_ChangedTranslation)
 			return True
 		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			self.IV_ChangedTranslation = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(self.IV_Changed_DNA_CDS_Seq), genetic_code)
+			self.IV_AA_length = len(self.IV_ChangedTranslation)
 			return True
 		else:
 			if self.IV_Changed_DNA_CDS_Seq == "" and self.Complete_CDS == "":
@@ -434,7 +442,7 @@ class Transcript:
 			self.origDNAtoshort = False
 			self.IV_Local_Classification(vinfo, genetic_code, stopcodon)
 			self.IV_Local_Effect_Length(vinfo)
-
+		self.IV_DNA_length = len(self.IV_Changed_DNA_CDS_Seq)
 		#IntegratedVariantObjects = self.updateIntegratedVariantObjectsList(IntegratedVariantObjects)
 		self.SetKeysToCombinedEffects(IntegratedVariantObjects)
 
@@ -857,8 +865,6 @@ class Transcript:
 			self.Lost_Stop = False
 		if len(vinfo.ChangedTriplets) % 3 != 0 or len(vinfo.OrigTriplets) % 3 != 0 or len(vinfo.OrigRevTriplets) % 3 != 0 or len(vinfo.ChangedRevTriplets) % 3 != 0:
 			self.origDNAtoshort = True # not really orgiDNA, others too, but hey, it works
-
-
 
 	def IV_Local_Effect_Length(self, vinfo: Variant_Information_Storage):
 		"""
@@ -1369,7 +1375,9 @@ class Transcript:
 			self.Change_CDS_Existence(False)
 		self.Calculate_Last_CDS_Position()
 		self.uChDNAsequence = self.Complete_CDS
+		self.uChDNA_length = len(self.uChDNAsequence)
 		self.uChAAsequence = For_Type_Safety_and_statics.Translation(For_Type_Safety_and_statics.Transcription(self.uChDNAsequence),genetic_code)
+		self.uChAA_length = len(self.uChAAsequence)
 
 	def ReverseTheCDS(self, genetic_code:dict) -> bool:
 		"""

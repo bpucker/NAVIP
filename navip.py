@@ -43,7 +43,27 @@ except ModuleNotFoundError:
 
 if __name__ == '__main__':
 
-    
+    # janstest = "--mode main --invcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakeVCFdata.vcf " \
+    #           "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegff.gff " \
+    #           "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/fakegenomdata.fa " \
+    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/"
+    # janstest = "--mode sfa --innavipvcf /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/All_VCF.vcf " \
+    #           "--innavipfasta /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/all_transcripts_data.fa " \
+    #           "--outpath /prj/gf-arabseq/project_VariantAnnotation/members/janbaas/test_Data/Output/sfa/"
+
+    #snpeffTest = "--mode pre --invcf /homes/janbaas/NAVIP_prj/members/bpucker/20180923_SnpEff_on_validated_variants/valid_SNPs_tair10.vcf " \
+    #             "--outpath /homes/janbaas/NAVIP_prj/members/Snpeff_VS_NAVIP/2019-02-13/Pre-Module/"
+
+    snpeffTest = "--mode main --invcf /homes/janbaas/NAVIP_prj/members/Snpeff_VS_NAVIP/2019-02-13/Pre-Module/first.vcf " \
+                 "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/sources/old/TAIR10_GFF3_genes_IDs.gff " \
+                 "--infasta /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/sources/TAIR10.fa " \
+                 "--outpath /homes/janbaas/NAVIP_prj/members/Snpeff_VS_NAVIP/2019-02-13/better_format/ " \
+                 "--ow"
+
+    # "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/sources/old/TAIR10_GFF3_genes_IDs.gff " \
+    # "--ingff /prj/gf-arabseq/project_VariantAnnotation/members/Snpeff_VS_NAVIP/sources/Araport11_GFF3_genes_transposons.201606_WITHOUT_ORGANELS.gff " \
+
+    sys.argv = snpeffTest.split()
     sleep(2) # time for creating directories. sometimes useful if python is to fast
     if "--mode" in sys.argv:
         args = sys.argv
