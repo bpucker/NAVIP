@@ -79,6 +79,8 @@ class snpeff_hgvs_converter():
 		aminodict["Tyr"] = "Y"
 		aminodict["Y"] = "Tyr"
 		aminodict["*"] = "*"
+		aminodict['X'] = 'Xaa'
+		aminodict['Xaa'] = 'X'
 		#aminodict["*"] = "stop_gained"
 		#aminodict["stop_gained"] = "*"
 
@@ -261,7 +263,6 @@ class snpeff_hgvs_converter():
 				ext = 'ext*' + str(AA_to_next_stop)
 			else:
 				ext = 'ext*?'
-				print('mhhh')
 			HGVS_P += '*' + str(AA_pos) + newamino + ext
 
 		elif TranscriptEnum.SUBSTITUTION in vinfo.Classification or newamino == '*':
@@ -282,10 +283,16 @@ class snpeff_hgvs_converter():
     		a variant with Arg97 as the first amino acid changed, 
     		shifting the reading frame, replacing it for a Pro and terminating at position Ter23.
 			"""
-			if newamino == '*': # counts as SUB
-				pass
-			elif '*' in newamino: #no idea what this is, but not always a frameshift
-				pass
+			if newamino == '*': # counts as SUB, len == 1
+				"""
+				p.(Tyr4*)
+				the predicted consequence at the protein level of the variant ATGGATGCATACGTCACG.. to 
+				ATGGATGCATA\_GTCACG (c.12delC) is a Tyr to translation termination codon. NOTE: the 
+				variant is described as a substitution, not as a frame shift (p.Tyr4TerfsTer1)
+				"""
+				HGVS_P += oldamino + str(AA_pos) + '*'
+			#elif '*' in newamino: #no idea what this is, but not always a frameshift
+			#	pass
 			else:
 				#first changed aa has to be the first aa here
 				if oldamino[0] != newamino[0]:
@@ -294,27 +301,310 @@ class snpeff_hgvs_converter():
 					#find first changed aa....
 					# test every aa, if they are equal, from the variant_position
 					i = 0
-					for oldaa,newaa in  transcript.uChAAsequence[AA_pos:], transcript.IV_ChangedTranslation[new_aa_pos:]:
+					# python can't do that:
+					#for oldaa,newaa in  transcript.uChAAsequence[AA_pos:], transcript.IV_ChangedTranslation[new_aa_pos:]:
+					#	if oldaa == "":
+					#		print("should not happen")
+					#	elif newaa == '*':
+					#		HGVS_P += oldamino + str(AA_pos + i) + '*'
+					#		break
+					#	elif oldaa == newaa:
+					#		i +=1
+					#		continue
+					#	else:
+					#		if vinfo.STOP_CAUSED_IN == -1:
+					#			HGVS_P += oldaa + str(AA_pos + i) + newaa + '*?'
+					#		else:
+					#			HGVS_P += oldaa + str(AA_pos + i) + newaa + '*' + str(vinfo.STOP_CAUSED_IN - i)
+					#		break
+					for j, oldaa in enumerate (transcript.uChAAsequence[AA_pos-1:]):
+						newaa = transcript.IV_ChangedTranslation[new_aa_pos-1 + j]
 						if oldaa == "":
 							print("should not happen")
+						elif newaa == '*':
+							HGVS_P += oldamino + str(AA_pos + i) + '*'
+							break
 						elif oldaa == newaa:
 							i +=1
 							continue
 						else:
 							if vinfo.STOP_CAUSED_IN == -1:
-								HGVS_P += oldaa + str(AA_pos + i) + newaa + 'Ter?'
+								HGVS_P += oldaa + str(AA_pos + i) + newaa + '*?'
 							else:
-								HGVS_P += oldaa + str(AA_pos + i) + newaa + 'Ter' + str(vinfo.STOP_CAUSED_IN - i)
+								HGVS_P += oldaa + str(AA_pos + i) + newaa + '*' + str(vinfo.STOP_CAUSED_IN - i)
+							break
 
 		elif TranscriptEnum.INSERTION in vinfo.Classification:
 			# extension is already checked ->
 			# frameshift, too
 			# first duplicationcheck
 			# second and last is the normal insertion
-			pass
+
+			if ((len (vinfo.Alt) -1) % 3) != 0:
+				print('how`?') # well, it should not be a frameshift -> multiple of 3
+			else:
+				#dup check
+				insertAA = vinfo.NewAmino
+				if (len(vinfo.Alt) -1) % 3 != 0:
+					print("how2?")
+				refpartAA = ""
+
+				if len(transcript.uChAAsequence) >= len(transcript.IV_OriginalTranslation):
+					if (len(vinfo.Alt) -1) / 3 == len(vinfo.NewAmino):
+						#Insertion of complete AA without interfering with other AA
+						refpartAA = transcript.uChAAsequence[AA_pos-1 - len(vinfo.NewAmino):AA_pos]
+					else:
+						#Insertion with interfering with other AA
+						# -> the original AA is in vinfo.NewAmino
+						# -> do not compare it with itself
+						if len(vinfo.NewAmino) == 1:
+							print('how?3')
+						refpartAA = transcript.uChAAsequence[AA_pos-1 - (len(vinfo.NewAmino) -1) :AA_pos]
+				else:
+					if (len(vinfo.Alt) -1) / 3 == len(vinfo.NewAmino):
+						#Insertion of complete AA without interfering with other AA
+						refpartAA = transcript.IV_OriginalTranslation[AA_pos-1 - len(vinfo.NewAmino):AA_pos]
+					else:
+						#Insertion with interfering with other AA
+						# -> the original AA is in vinfo.NewAmino
+						# -> do not compare it with itself
+						if len(vinfo.NewAmino) == 1:
+							print('how?3')
+						refpartAA = transcript.IV_OriginalTranslation[AA_pos-1 - (len(vinfo.NewAmino) -1 ):AA_pos ]
+				#print(vinfo.NewAmino + "\t" + refpartAA)
+				#print(transcript.IV_OriginalTranslation[AA_pos - (len(vinfo.NewAmino) -3 ):AA_pos + 3])
+
+				if len(vinfo.NewAmino) == len(refpartAA):
+					dup = True
+					#print(refpartAA, vinfo.NewAmino)
+					#print(type(refpartAA))
+					for i, oa in enumerate(refpartAA):
+						if vinfo.NewAmino[i] == oa:
+							continue
+						else:
+							dup = False
+					if dup:
+						if (len(vinfo.Alt) -1) / 3 == len(vinfo.NewAmino):
+							# Insertion of complete AA without interfering with other AA
+							if len(vinfo.NewAmino) == 1: # one AA
+								"""
+								p.Ala3dup (one amino acid)
+								a duplication of amino acid Ala3 in the sequence 
+								MetGlyAlaArgSerSerHis to MetGlyAlaAlaArgSerSerHis
+								"""
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'dup'
+							else: # multiple AA
+								"""
+								p.Ala3_Ser5dup (several amino acids)
+								a duplication of amino acids Ala3 to Ser5 in the sequence 
+								MetGlyAlaArgSerSerHis to MetGlyAlaArgSerAlaArgSerSerHis
+								"""
+								HGVS_P += refpartAA[0] + str(AA_pos - (len(vinfo.NewAmino) -1 )) + '_' \
+										  + aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'dup'
+
+
+						else:
+							# Insertion with interfering with other AA
+							if len(vinfo.NewAmino) == 2:  # one new AA, first AA not changed, because its a dup
+								# so it looks like, this can only happen, if vinfo.NewAmino[0] == vinfo.NewAmino[1]
+								"""
+								p.Ala3dup (one amino acid)
+								a duplication of amino acid Ala3 in the sequence 
+								MetGlyAlaArgSerSerHis to MetGlyAlaAlaArgSerSerHis
+								"""
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'dup'
+							else:  # multiple AA
+								"""
+								p.Ala3_Ser5dup (several amino acids)
+								a duplication of amino acids Ala3 to Ser5 in the sequence 
+								MetGlyAlaArgSerSerHis to MetGlyAlaArgSerAlaArgSerSerHis
+								"""
+								#print(refpartAA[0] + str(AA_pos - (len(vinfo.NewAmino) - 1)) + '_' + vinfo.OrigAmino + str(AA_pos) + 'dup' )
+								#print(refpartAA + str(AA_pos - (len(vinfo.NewAmino) - 1)) + '_' + vinfo.OrigAmino + str(AA_pos) + 'dup')
+								#print(vinfo.ChrPosition)
+
+								HGVS_P += refpartAA[0] + str(AA_pos - (len(vinfo.NewAmino) - 1)) + '_' + \
+										  aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'dup'
+					else:
+						# no dup, but insertion without frameshift
+						# delins are possible
+						if (len(vinfo.Alt) -1) / 3 == len(vinfo.NewAmino):
+							# Insertion of complete AA without interfering with other AA
+							"""
+								p.His4_Gln5insAla
+								the insertion of amino acid Ala between amino acids His4 and Gln5 
+								changing MetLysGlyHisGlnGlnCys to MetLysGlyHisAlaGlnGlnCys
+
+								p.Lys2_Gly3insGlnSerLys
+								the insertion of amino acids GlnSerLys between amino acids Lys2 and 
+								Gly3 changing MetLysGlyHisGlnGlnCys to MetLysGlnSerLysGlyHisGlnGlnCys
+							"""
+							#if len(vinfo.NewAmino) == 1: # one AA
+							HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + '_' + refpartAA[1] \
+									  + str(AA_pos+1) + 'ins' + newamino
+							#else: # multiple AA
+							#	HGVS_P += vinfo.OrigAmino[0] + str(AA_pos) + '_' + refpartAA[AA_pos + 1] \
+							#			  + str(AA_pos + 1) + 'ins' + vinfo.NewAmino
+						else:
+							# looks like, if the first AA is changed -> delin, the ref AA, when the variation is interfering
+							# with another AA
+							"""
+								p.Cys28delinsTrpVal
+								a deletion of amino acid Cys28, replaced with TrpVal
+							"""
+							if vinfo.OrigAmino[0] == vinfo.NewAmino[0]: # no delin
+								#print(vinfo.ChrPosition)
+								#print(vinfo.OrigAmino[0] + str(AA_pos) + '_')
+								#print(refpartAA)
+								#print(transcript.IV_OriginalTranslation[AA_pos:])
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + '_' + refpartAA[ 1] \
+										  + str(AA_pos + 1) + 'ins' + newamino
+							else:
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + newamino
+				else:
+					# reasons for a variation to be in this else:
+					# insertion in the beginning of the transctript -> insert to long, no complete refAA existent
+					#	-> example: insert 5 AA, but its in the start codon
+					if len(vinfo.NewAmino) >= AA_pos:
+						# no duplication/ refAA possible, because insertion is to big
+						"""
+							p.Cys28delinsTrpVal
+							a deletion of amino acid Cys28, replaced with TrpVal
+						"""
+						if vinfo.OrigRaster == 2:
+							#insertion without interfering with first origAA
+							"""
+							p.His4_Gln5insAla
+								the insertion of amino acid Ala between amino acids His4 
+								and Gln5 changing MetLysGlyHisGlnGlnCys to MetLysGlyHisAlaGlnGlnCys
+							"""
+							if len(vinfo.NewAmino) > 1:
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + newamino[1:]
+							else:
+								print("curios effect")
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + newamino
+						else:
+							#insertion with interfering with first origAA
+							if vinfo.OrigAmino[0] == vinfo.NewAmino[0]:
+								#first AA not changed -> insertion after
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + newamino
+							else:
+								#first AA changed -> SUB or DELINS
+								if len(vinfo.NewAmino) == 1 and vinfo.NewAmino == '*':
+									#SUB
+									#LRG_199p1:p.Trp24Ter (p.Trp24*)
+									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + newamino
+								else:
+									#DELINS
+									"""
+										p.Cys28delinsTrpVal
+										a deletion of amino acid Cys28, replaced with TrpVal
+									"""
+									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + newamino
+
+					else:
+						# stopcodon + stuff at the end of the transcript
+						if vinfo.NewAmino == vinfo.OrigAmino:
+						#if vinfo.NewAmino[0] == vinfo.OrigAmino[0] and len (vinfo.NewAmino) == 1 and len(vinfo.OrigAmino) == 1:
+							# silent sub
+							"""
+								silent (no change)
+								NP_003997.1:p.Cys188=
+							"""
+							b = ""
+							for aa in vinfo.OrigAmino:
+								b += aminodict[aa]
+							HGVS_P += b + str(AA_pos)  + '='
+						else:
+							"""
+								p.Cys28delinsTrpVal
+								a deletion of amino acid Cys28, replaced with TrpVal
+								
+								p.(Ter315TyrextAsnLysGlyThrTer) (alternatively p.*315TyrextAsnLysGlyThr*)
+									a variant in the stop codon (Ter/*) at position 315, 
+									changing it to a Tyr-codon (a no-stop variant) and adding a tail of 
+									new amino acids to the protein’s C-terminus, ending at a new stop codon (Ter5/*5)
+							"""
+							if vinfo.NewAmino[0] == vinfo.OrigAmino[0]:
+								# no sub, possible here
+
+								if len(vinfo.NewAmino) > 1 and len(vinfo.OrigAmino) > 1:
+									#delins
+									b = ""
+									for aa in vinfo.OrigAmino:
+										b += aminodict[aa]
+									HGVS_P += b + str(AA_pos +1) + 'delins' + newamino[1:]
+								elif len(vinfo.OrigAmino) == 1 and len(vinfo.NewAmino) > 1:
+									# here, if the AA 2+ are not identical with the original AA
+									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + newamino
+								else: # orig > 1 and newamino == 1 () impossible?
+									print('Impossible case triggered.')
+							else:
+								b = ""
+								for aa in vinfo.OrigAmino:
+									b += aminodict[aa]
+								HGVS_P += b + str(AA_pos) + 'delins' + newamino
 		elif TranscriptEnum.DELETION in vinfo.Classification:
-			# deletionstuff
-			pass
+			# deletionstuff, no frameshifts possible anymore -> codon-position should always be 2 ???? nope
+			# len(vinfo.NewAmino) > 1: true
+			if vinfo.OrigRaster == 2:
+				#deletion of complete AA, without interfering of another AA (startposition +1 (dna))
+				if len(vinfo.OrigAmino) == 2:
+					#complete deletion of the second AA
+					"""
+						one AA
+						LRG_199p1:p.Val7del
+						a deletion of amino acid Val7 in the reference sequence LRG_199p1
+					"""
+					HGVS_P += aminodict[vinfo.OrigAmino[1].upper()] + str(AA_pos +1 ) + 'del'
+				elif len(vinfo.OrigAmino) == 1:
+					#impossible case (or somethi8ng went wrong with the transcript)
+					if vinfo.OrigAmino == vinfo.NewAmino:
+						#sub
+						#NP_003997.1:p.Cys188=
+						HGVS_P += oldamino + str(AA_pos) + '='
+					else:
+						try:
+							HGVS_P += oldamino + str(AA_pos) + vinfo.NewAmino[0]
+						except IndexError:
+							print("Variant error: " + str(vinfo.ChrPosition))
+							HGVS_P += 'oldamino' + str(AA_pos) + 'Xaa'
+				else:
+					"""
+						a few AA
+						NP_003997.1:p.Lys23_Val25del
+						a deletion of amino acids Lys23 to Val25 in reference sequence NP_003997.1
+					"""
+					HGVS_P += oldamino[1] + str(AA_pos + 1) + '_' + oldamino[len(oldamino)-1] + str(AA_pos + len(oldamino)) +  'del'
+
+			else :
+				if vinfo.OrigAmino == "":
+					print("Variant error: " + str(vinfo.ChrPosition))
+				elif len(vinfo.OrigAmino) == 1:
+					#this should not happen here, but who knows
+					if vinfo.OrigAmino == vinfo.NewAmino:
+						#sub
+						#NP_003997.1:p.Cys188=
+						HGVS_P += oldamino + str(AA_pos) + '='
+					else:
+						HGVS_P += oldamino + str(AA_pos) + aminodict[vinfo.NewAmino.upper()]
+				elif TranscriptEnum.STOP_GAINED in vinfo.Classification:
+					"""
+						p.Trp26Ter (p.Trp26*)
+						amino acid Trp26 is changed to a stop codon (Ter, *)
+						NOTE: this change is not described as a deletion of 
+						the C-terminal end of the protein (i.e. p.Trp26_Arg1623del)
+					"""
+					HGVS_P += aminodict[vinfo.OrigAmino[0]] + str(AA_pos) + aminodict[vinfo.NewAmino.upper()]
+				else:
+					# always deletions, starting inside the codon, always multiple of 3 bp deleted
+					# stop lost, stop changed and stop gained is handled to this point
+					# --> only delins (?)
+					"""
+						p.Cys28_Lys29delinsTrp
+						a deletion of amino acids Cys28 and Ly29, replaced with Trp
+					"""
+					HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + "_" + aminodict[vinfo.OrigAmino[len(vinfo.OrigAmino)-1].upper()] + str(AA_pos + len(vinfo.OrigAmino)) + 'delins'
 		else:
 			print('what did i forget?')
 
