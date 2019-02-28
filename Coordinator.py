@@ -92,7 +92,10 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 
 				for vinfo in transcriptHier.IntegratedVariantObjects_CDS_Hits:
 					vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
-					snpeff_string = infoline_parser.convert_main(infoline_parser,transcriptHier,vinfo)
+					try:
+						snpeff_string = infoline_parser.convert_main(infoline_parser,transcriptHier,vinfo)
+					except:
+						print('Critical error with variant: ' + str(vinfo.ChrPosition) + '\t' + str(transcriptHier.TID))
 					classificationstring = ""
 					class_list = vinfo.Classification
 					class_list_length = len(class_list)
