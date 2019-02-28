@@ -95,6 +95,9 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					try:
 						snpeff_string = infoline_parser.convert_main(infoline_parser,transcriptHier,vinfo)
 					except:
+						snpeff_string = ""
+						LogOrganizer.addToLog(LogEnums.COORDINATOR_VARIANT_LOG,
+											  str(vinfo.ChrPosition) + "\t" + str(currentTranscript.TID))
 						print('Critical error with variant: ' + str(vinfo.ChrPosition) + '\t' + str(transcriptHier.TID))
 					classificationstring = ""
 					class_list = vinfo.Classification
@@ -212,17 +215,20 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		for chrName in gff3.GetChromosomeNames():
 			print(chrName)
 			for currentTranscript in gff3.GetChrTranscriptsDict(chrName).values():
-				currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
+				try:
+					currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
 
-				if not currentTranscript.CDS_Exist:
-					continue
-				if Orig_AA:
-					currentTranscript.Create_IV_OriginalTranslation(genetic_code)
+					if not currentTranscript.CDS_Exist:
+						continue
+					if Orig_AA:
+						currentTranscript.Create_IV_OriginalTranslation(genetic_code)
 
-				if currentTranscript.Transcript_CDS_damaged:
-					continue
-				if New_AA:
-					currentTranscript.Create_IV_ChangedTranslation(genetic_code)
+					if currentTranscript.Transcript_CDS_damaged:
+						continue
+					if New_AA:
+						currentTranscript.Create_IV_ChangedTranslation(genetic_code)
+				except:
+					LogOrganizer.addToLog(LogEnums.COORDINATOR_TRANSCRIPT_LOG,"\t" + str(currentTranscript.TID))
 
 	def Complete_Check(gff3: GFF3_Handler_V3, ghandler: GenomeHandler):
 		"""
@@ -241,219 +247,219 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 
 				for vinfo in currentTranscript.IntegratedVariantObjects_CDS_Hits:
 					vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
-					#try :
-					if TranscriptEnum.SUBSTITUTION in vinfo.Classification:
-						# Variant <-> Fasta Check
-						if vinfo.Ref != ghandler.singleSeq(chrName, vinfo.ChrPosition):
-							LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "Sub_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
-							#print("Sub_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+					try :
+						if TranscriptEnum.SUBSTITUTION in vinfo.Classification:
+							# Variant <-> Fasta Check
+							if vinfo.Ref != ghandler.singleSeq(chrName, vinfo.ChrPosition):
+								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "Sub_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+								#print("Sub_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
 
-						# Variant <-> Transcript with Direction Check
-						if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
-							if vinfo.Ref != currentTranscript.SeqInCDS(
-									vinfo.ChrPosition,
-									vinfo.ChrPosition):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "Sub_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
-								#print(
-								#	"Sub_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+							# Variant <-> Transcript with Direction Check
+							if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
+								if vinfo.Ref != currentTranscript.SeqInCDS(
+										vinfo.ChrPosition,
+										vinfo.ChrPosition):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "Sub_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+									#print(
+									#	"Sub_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
 
-							if vinfo.Ref != currentTranscript.SeqInCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-									vinfo.Unchanged_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "Sub_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
-								#print(
-								#	"Sub_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+								if vinfo.Ref != currentTranscript.SeqInCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+										vinfo.Unchanged_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "Sub_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+									#print(
+									#	"Sub_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
 
-							if vinfo.Alt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
-									vinfo.Changed_CDS_Position,
-									vinfo.Changed_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n" )
-								#print(
-								#	"Sub_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+								if vinfo.Alt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
+										vinfo.Changed_CDS_Position,
+										vinfo.Changed_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n" )
+									#print(
+									#	"Sub_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
 
-						elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
-							if vinfo.Ref != currentTranscript.SeqInCDS(
-									vinfo.ChrPosition,
-									vinfo.ChrPosition) and not currentTranscript.CDS_Changed:
-								# When the used CDS gets changed, then it is of cause not possible to check against it.
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("Sub_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
+							elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
+								if vinfo.Ref != currentTranscript.SeqInCDS(
+										vinfo.ChrPosition,
+										vinfo.ChrPosition) and not currentTranscript.CDS_Changed:
+									# When the used CDS gets changed, then it is of cause not possible to check against it.
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("Sub_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-									vinfo.Unchanged_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("Sub_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
-							#print(str(vinfo.ChrPosition) + "\t" + str(currentTranscript.TID) )
-							if vinfo.ReverseAlt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
-									vinfo.Changed_CDS_Position,
-									vinfo.Changed_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("Sub_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+										vinfo.Unchanged_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("Sub_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
+								#print(str(vinfo.ChrPosition) + "\t" + str(currentTranscript.TID) )
+								if vinfo.ReverseAlt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
+										vinfo.Changed_CDS_Position,
+										vinfo.Changed_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("Sub_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS(
-									vinfo.ChrPosition,
-									vinfo.ChrPosition):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("Sub_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS(
+										vinfo.ChrPosition,
+										vinfo.ChrPosition):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("Sub_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-									vinfo.Unchanged_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("Sub_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+										vinfo.Unchanged_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"Sub_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("Sub_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-					elif TranscriptEnum.INSERTION in vinfo.Classification:
-						# Variant <-> Fasta Check
-						if vinfo.Ref != ghandler.singleSeq(chrName, vinfo.ChrPosition):
-							LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(
-								vinfo.ChrPosition) + "\n" )
-							#print("INSERTION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(
-							#	vinfo.ChrPosition) + "\n")
-
-						# Variant <-> Transcript with Direction Check
-						if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
-							if vinfo.Ref != currentTranscript.SeqInCDS(
-									vinfo.ChrPosition,
-									vinfo.ChrPosition):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("INSERTION_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
-
-							if vinfo.Ref != currentTranscript.SeqInCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-									vinfo.Unchanged_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(
+						elif TranscriptEnum.INSERTION in vinfo.Classification:
+							# Variant <-> Fasta Check
+							if vinfo.Ref != ghandler.singleSeq(chrName, vinfo.ChrPosition):
+								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(
 									vinfo.ChrPosition) + "\n" )
-								#print("INSERTION_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition))
-
-							if vinfo.Alt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
-									vinfo.Changed_CDS_Position,
-													vinfo.Changed_CDS_Position + len(vinfo.Alt) - 1):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n" )
-								#print("INSERTION_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition)+ "\n")
-
-						elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
-							if vinfo.Ref != currentTranscript.SeqInCDS(
-									vinfo.ChrPosition,
-									vinfo.ChrPosition)and not currentTranscript.CDS_Changed:
-								# When the used CDS gets changed, then it is of cause not possible to check against it.
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n" )
-								#print("INSERTION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
+								#print("INSERTION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(
 								#	vinfo.ChrPosition) + "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-									vinfo.Unchanged_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n" )
-								#print("INSERTION_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
+							# Variant <-> Transcript with Direction Check
+							if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
+								if vinfo.Ref != currentTranscript.SeqInCDS(
+										vinfo.ChrPosition,
+										vinfo.ChrPosition):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("INSERTION_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-							if vinfo.ReverseAlt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
-									vinfo.Changed_CDS_Position,
-													vinfo.Changed_CDS_Position + len(vinfo.Alt) - 1):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n" )
-								#print("INSERTION_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition) + "\n")
+								if vinfo.Ref != currentTranscript.SeqInCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+										vinfo.Unchanged_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n" )
+									#print("INSERTION_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition))
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS(
-									vinfo.ChrPosition,
-									vinfo.ChrPosition):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "INSERTION_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("INSERTION_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition))
+								if vinfo.Alt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
+										vinfo.Changed_CDS_Position,
+														vinfo.Changed_CDS_Position + len(vinfo.Alt) - 1):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n" )
+									#print("INSERTION_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition)+ "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-									vinfo.Unchanged_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "INSERTION_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition) + "\n")
-								#print("INSERTION_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
-								#	vinfo.ChrPosition))
+							elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
+								if vinfo.Ref != currentTranscript.SeqInCDS(
+										vinfo.ChrPosition,
+										vinfo.ChrPosition)and not currentTranscript.CDS_Changed:
+									# When the used CDS gets changed, then it is of cause not possible to check against it.
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n" )
+									#print("INSERTION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-					elif TranscriptEnum.DELETION in vinfo.Classification:
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+										vinfo.Unchanged_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n" )
+									#print("INSERTION_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-						# Variant <-> Fasta Check
+								if vinfo.ReverseAlt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
+										vinfo.Changed_CDS_Position,
+														vinfo.Changed_CDS_Position + len(vinfo.Alt) - 1):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"INSERTION_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n" )
+									#print("INSERTION_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition) + "\n")
 
-						if vinfo.Ref != ghandler.seq(chrName, vinfo.ChrPosition, vinfo.ChrPosition + len(vinfo.Ref) - 1):
-							LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,
-								"DELETION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS(
+										vinfo.ChrPosition,
+										vinfo.ChrPosition):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "INSERTION_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("INSERTION_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition))
 
-						# Variant <-> Transcript with Direction Check
-						if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
-							if vinfo.Ref != currentTranscript.SeqInCDS(
-									vinfo.ChrPosition,
-													vinfo.ChrPosition + len(vinfo.Ref) - 1):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+										vinfo.Unchanged_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG, "INSERTION_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition) + "\n")
+									#print("INSERTION_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
+									#	vinfo.ChrPosition))
 
-							if vinfo.Ref != currentTranscript.SeqInCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-													vinfo.Unchanged_CDS_Position + len(vinfo.Ref) - 1):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+						elif TranscriptEnum.DELETION in vinfo.Classification:
 
-							if vinfo.Alt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
-									vinfo.Changed_CDS_Position,
-									vinfo.Changed_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+							# Variant <-> Fasta Check
 
-						elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
-							if vinfo.Ref != currentTranscript.SeqInCDS(
-									vinfo.ChrPosition,
-													vinfo.ChrPosition + len(vinfo.Ref) - 1)and not currentTranscript.CDS_Changed:
-								# When the used CDS gets changed, then it is of cause not possible to check against it.
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+							if vinfo.Ref != ghandler.seq(chrName, vinfo.ChrPosition, vinfo.ChrPosition + len(vinfo.Ref) - 1):
+								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,
+									"DELETION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-													vinfo.Unchanged_CDS_Position + len(vinfo.Ref) - 1):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+							# Variant <-> Transcript with Direction Check
+							if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
+								if vinfo.Ref != currentTranscript.SeqInCDS(
+										vinfo.ChrPosition,
+														vinfo.ChrPosition + len(vinfo.Ref) - 1):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 1: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
+
+								if vinfo.Ref != currentTranscript.SeqInCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+														vinfo.Unchanged_CDS_Position + len(vinfo.Ref) - 1):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
+
+								if vinfo.Alt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
+										vinfo.Changed_CDS_Position,
+										vinfo.Changed_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_ALT != CDS-Seq 3: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
+
+							elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
+								if vinfo.Ref != currentTranscript.SeqInCDS(
+										vinfo.ChrPosition,
+														vinfo.ChrPosition + len(vinfo.Ref) - 1)and not currentTranscript.CDS_Changed:
+									# When the used CDS gets changed, then it is of cause not possible to check against it.
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 1.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
+
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+														vinfo.Unchanged_CDS_Position + len(vinfo.Ref) - 1):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 2.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
 
 
-							if vinfo.ReverseAlt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
-									vinfo.Changed_CDS_Position,
-									vinfo.Changed_CDS_Position):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+								if vinfo.ReverseAlt != currentTranscript.SeqInIV_Changed_DNA_CDS_Seq(
+										vinfo.Changed_CDS_Position,
+										vinfo.Changed_CDS_Position):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_Alt != CDS-Seq 3.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS(
-											vinfo.ChrPosition + (len(vinfo.Ref) - 1),
-									vinfo.ChrPosition):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS(
+												vinfo.ChrPosition + (len(vinfo.Ref) - 1),
+										vinfo.ChrPosition):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 4.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
 
-							if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
-									vinfo.Unchanged_CDS_Position,
-													vinfo.Unchanged_CDS_Position + len(vinfo.Ref) - 1):
-								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
-									vinfo.ChrPosition)+ "\n")
+								if vinfo.ReverseRef != currentTranscript.SeqInRevCDS_OverCDS_Position(
+										vinfo.Unchanged_CDS_Position,
+														vinfo.Unchanged_CDS_Position + len(vinfo.Ref) - 1):
+									LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"DELETION_REF != CDS-Seq 5.2: " + str(currentTranscript.TID) + "\t" + str(
+										vinfo.ChrPosition)+ "\n")
 
-					else:
-						LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"No Classification in Complete_Check:\t" + str(currentTranscript.TID) +"\t" + str(vinfo.ChrPosition)+ "\n")
-					#except IndexError:
-					#	LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_CRITICAL_LOG, str(vinfo.ChrPosition) + "\t" + str(currentTranscript.TID))
+						else:
+							LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,"No Classification in Complete_Check:\t" + str(currentTranscript.TID) +"\t" + str(vinfo.ChrPosition)+ "\n")
+					except :
+						LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_CRITICAL_LOG, str(vinfo.ChrPosition) + "\t" + str(currentTranscript.TID))
 	def Write_All_Fasta(data_path: str,
 						data_name: str,
 						date_time: bool,
@@ -496,72 +502,73 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			for chrName in gff3.GetChromosomeNames():
 				for currentTranscript in gff3.GetChrTranscriptsDict(chrName).values():
 					currentTranscript = For_Type_Safety_and_statics.Transcript_Type_Safety(currentTranscript)
+					try:
+						if not currentTranscript.CDS_Exist:
+							continue
 
-					if not currentTranscript.CDS_Exist:
-						continue
-
-					if Orig_DNA:
-						if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
-							normal_data_list_to_write.append(
-								">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.ODNA.value) + "\n")
-							normal_data_list_to_write.append(str(currentTranscript.Complete_CDS) + "\n")
-						elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
-							normal_data_list_to_write.append(
-								">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.ODNA.value) + "\n")
-							normal_data_list_to_write.append(str(currentTranscript.Rev_CDS) + "\n")
-						else:
-							LogOrganizer.addToLog(LogEnums.COORDINATOR_FASTA_FILE_ERROR_LOG,"No Direction:Write_All_Fasta: " + str(currentTranscript.TID) + "\n")
-					if Orig_AA:
-						normal_data_list_to_write.append(
-							">" + str(currentTranscript.TID) + "|" + Fasta_Enum.OAA.value + "\n")
-						normal_data_list_to_write.append(str(currentTranscript.IV_OriginalTranslation) + "\n")
-
-					if currentTranscript.Transcript_CDS_damaged:
-						Transcript_CDS_damaged_data_list.append(
-							str(currentTranscript.TID) + " " + str(currentTranscript.Gene_Info_String))
-						for utr in currentTranscript.UTR_Description:
-							if "\n" in utr:
-								Transcript_CDS_damaged_data_list.append(utr)
+						if Orig_DNA:
+							if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
+								normal_data_list_to_write.append(
+									">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.ODNA.value) + "\n")
+								normal_data_list_to_write.append(str(currentTranscript.Complete_CDS) + "\n")
+							elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
+								normal_data_list_to_write.append(
+									">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.ODNA.value) + "\n")
+								normal_data_list_to_write.append(str(currentTranscript.Rev_CDS) + "\n")
 							else:
-								Transcript_CDS_damaged_data_list.append(str(utr) + "\n")
-						for exon in currentTranscript.EXON_Descriptin:
-							if "\n" in exon:
-								Transcript_CDS_damaged_data_list.append(exon)
-							else:
-								Transcript_CDS_damaged_data_list.append(str(exon) + "\n")
-						for vinfo in currentTranscript.IntegratedVariantObjects_CDS_Hits:
-							# vinfo = For_Type_Safety.Variant_Information_Storage_Type_Safety(vinfo)
-							classificationstring = ""
-							class_list = vinfo.Classification
-							class_list_length = len(class_list)
-							for i in range(0, class_list_length):
-								classificationstring += class_list[i].value
-								if i != (class_list_length - 1):  # no tab after last entry
-									classificationstring += "\t"
+								LogOrganizer.addToLog(LogEnums.COORDINATOR_FASTA_FILE_ERROR_LOG,"No Direction:Write_All_Fasta: " + str(currentTranscript.TID) + "\n")
+						if Orig_AA:
+							normal_data_list_to_write.append(
+								">" + str(currentTranscript.TID) + "|" + Fasta_Enum.OAA.value + "\n")
+							normal_data_list_to_write.append(str(currentTranscript.IV_OriginalTranslation) + "\n")
+
+						if currentTranscript.Transcript_CDS_damaged:
 							Transcript_CDS_damaged_data_list.append(
-								str(vinfo.ChrPosition) + "\t" +
-								str(vinfo.Ref) + "\t" +
-								str(vinfo.Alt) + "\t" +
-								str(classificationstring) + "\n")
-						continue
-
-					# Meh more DNA/AA Sequences, thanks to Stop-lost transcription length changes
-					normal_data_list_to_write.append(
-						">" + str(currentTranscript.TID) + "|" + Fasta_Enum.ouchDNA.value + "\n")
-					normal_data_list_to_write.append(str(currentTranscript.uChDNAsequence) + "\n")
-
-					normal_data_list_to_write.append(
-						">" + str(currentTranscript.TID) + "|" + Fasta_Enum.ouchAA.value + "\n")
-					normal_data_list_to_write.append(str(currentTranscript.uChAAsequence) + "\n")
-
-					if New_DNA:
+								str(currentTranscript.TID) + " " + str(currentTranscript.Gene_Info_String))
+							for utr in currentTranscript.UTR_Description:
+								if "\n" in utr:
+									Transcript_CDS_damaged_data_list.append(utr)
+								else:
+									Transcript_CDS_damaged_data_list.append(str(utr) + "\n")
+							for exon in currentTranscript.EXON_Descriptin:
+								if "\n" in exon:
+									Transcript_CDS_damaged_data_list.append(exon)
+								else:
+									Transcript_CDS_damaged_data_list.append(str(exon) + "\n")
+							for vinfo in currentTranscript.IntegratedVariantObjects_CDS_Hits:
+								# vinfo = For_Type_Safety.Variant_Information_Storage_Type_Safety(vinfo)
+								classificationstring = ""
+								class_list = vinfo.Classification
+								class_list_length = len(class_list)
+								for i in range(0, class_list_length):
+									classificationstring += class_list[i].value
+									if i != (class_list_length - 1):  # no tab after last entry
+										classificationstring += "\t"
+								Transcript_CDS_damaged_data_list.append(
+									str(vinfo.ChrPosition) + "\t" +
+									str(vinfo.Ref) + "\t" +
+									str(vinfo.Alt) + "\t" +
+									str(classificationstring) + "\n")
+							continue
+						# Meh more DNA/AA Sequences, thanks to Stop-lost transcription length changes
 						normal_data_list_to_write.append(
-							">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.nDNA.value) + "\n")
-						normal_data_list_to_write.append(str(currentTranscript.IV_Changed_DNA_CDS_Seq) + "\n")
-					if New_AA:
+							">" + str(currentTranscript.TID) + "|" + Fasta_Enum.ouchDNA.value + "\n")
+						normal_data_list_to_write.append(str(currentTranscript.uChDNAsequence) + "\n")
+
 						normal_data_list_to_write.append(
-							">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.nAA.value) + "\n")
-						normal_data_list_to_write.append(str(currentTranscript.IV_ChangedTranslation) + "\n")
+							">" + str(currentTranscript.TID) + "|" + Fasta_Enum.ouchAA.value + "\n")
+						normal_data_list_to_write.append(str(currentTranscript.uChAAsequence) + "\n")
+
+						if New_DNA:
+							normal_data_list_to_write.append(
+								">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.nDNA.value) + "\n")
+							normal_data_list_to_write.append(str(currentTranscript.IV_Changed_DNA_CDS_Seq) + "\n")
+						if New_AA:
+							normal_data_list_to_write.append(
+								">" + str(currentTranscript.TID) + "|" + str(Fasta_Enum.nAA.value) + "\n")
+							normal_data_list_to_write.append(str(currentTranscript.IV_ChangedTranslation) + "\n")
+					except:
+						LogOrganizer.addToLog(LogEnums.COORDINATOR_TRANSCRIPT_LOG,"\t" + str(currentTranscript.TID))
 
 			normal_output = "".join(normal_data_list_to_write)
 			New_Fasta_File = open(str(data_path) + str(timestop) + str(data_name) + ".fa", "w")
