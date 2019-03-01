@@ -607,10 +607,7 @@ class snpeff_hgvs_converter():
 					HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + "_" + aminodict[vinfo.OrigAmino[len(vinfo.OrigAmino)-1].upper()] + str(AA_pos + len(vinfo.OrigAmino)) + 'delins'
 		else:
 			print('what did i forget?')
-
-
-
-		snpeff_like_info_string = 'ANN=' + vinfo.Alt + '|' \
+		snpeff_like_info_string = 'NAV2=' + vinfo.Alt + '|' \
 								  + Annotation + "|" \
 								  + Annotation_Impact + "|" \
 								  + Gene_Name + "|" \
@@ -628,7 +625,7 @@ class snpeff_hgvs_converter():
 								  + str(AA_pos) + "/" \
 								  + str(AA_length) + "|" \
 								  + distance + "|" \
-								  + errors_warnings
+								  + errors_warnings + ";"
 		return snpeff_like_info_string
 
 

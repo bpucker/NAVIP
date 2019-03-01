@@ -333,11 +333,45 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 		print(str(removedEntries) + " lines removed, because of conflicting data (see log).")
 		return lines
 
+	def remove_data2(lines:list) -> list:
+		i = 0
+		removedEntries = 0
+		pos = 0
+		oldline = ""
+		lines_new = []
+		for line in lines:
+			spline = line.split("\t")
+			if int(spline[1]) > pos:
+				oldline = line
+				pos = int(spline[1])
+				pos += -1 + len(spline[3])  # + length of ref, for deletions
+				#i += 1
+				lines_new.append(line)
+			elif spline[0] == oldline.split("\t")[0]:
+				# print("Removed:\n" + line + "Because of:\n" + oldline)
+				VCF_preproc_log_in_short.append("Rem.:\t" + str("\t".join(lines[i].split("\t")[0:5])) + "\n")
+				VCF_preproc_log.append("Removed: " + str(lines[i]))
+				VCF_preproc_log_in_short.append("Because:\t" + str("\t".join(oldline.split("\t")[0:5])) + "\n")
+				VCF_preproc_log.append(oldline)
+				#del lines[i]
+				removedEntries += 1
+			else:
+				lines_new.append(line)
+				oldline = line
+				pos = int(spline[1])
+				pos += -1 + len(spline[3])  # + length of ref, for deletions
+				i += 1
+		print(str(removedEntries) + " lines removed, because of conflicting data (see log).")
+		return lines_new
+
+	lines1 = sorted(lines1,key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
+	lines2 = sorted(lines2, key=lambda data_line: (str(data_line.split("\t")[0]), int(data_line.split("\t")[1])))
+
 	VCF_preproc_log_in_short.append("Data Conflicts in File 1:\n")
-	lines1 = remove_data(lines1)
+	lines1 = remove_data2(lines1)
 	print("Remove data 1 done: "+ str(datetime.now() - starttime))
 	VCF_preproc_log_in_short.append("Data Conflicts in File 2:\n")
-	lines2 = remove_data(lines2)
+	lines2 = remove_data2(lines2)
 	print("Remove data 2 done: " + str(datetime.now() - starttime))
 
 	nvcf_1 = open (new1_vcf,"w")

@@ -50,12 +50,12 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		"""
 		# chrom	Pos	ID	Ref	Alt Info
 		vcf_file = open(data_path + "All_VCF" + ".vcf", "w")
-		vcf_file.write("##All Data Output\n")
+		vcf_file.write("##Chrom\tPos\tID\tRef\tAlt\tQual\tFilter\tInfo\n")
+		vcf_file.write("##NAVIP: All Data Output\n")
 		vcf_file.write("##Please note, that the Variant_Position_in_Codon is read from left to right in forward "
 					   "and rigth to left in reverse strand direction.\n")
-		vcf_file.write("##Chrom\tPos\tID\tRef\tAlt\tQual\tFilter\tInfo\n")
-		vcf_file.write("##When complete output is allowed, the Info field is constructed like this:\n")
-		vcf_file.write("##Info:TranscriptID|"
+		vcf_file.write("##If there are no shared effect keys, the value is:\"NONE\".\n")
+		vcf_file.write("##Info=<ID=NAV1, Type=String,Number=.,Values=[TranscriptID|"
 					   "Strand_Direction|"
 					   "Variant_Classification1,Variant_Classification2,...|"
 					   "Shared_EffKey(s)|"
@@ -64,10 +64,11 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					   "old_CDS_Position|"
 					   "ALT_Codon(s);Variant_Position_in_Codon|"
 					   "ALT_AA|"
-					   "new_CDS_Position|"
-					   "NAVIP_END|"
-					   "<old info field>\n")
-		vcf_file.write("##If there are no shared effect keys, the value is:\"NONE\".\n")
+					   "new_CDS_Position]>\n")
+
+		vcf_file.write("##Info=<ID=NAV2, Type=String,Number=.,Values=[ALT|ANNOTATIONS|ANNOTATION_IMPACT|GENE_NAME|"
+					   "GENE_ID|FEATURE_TYPE|FEATURE_ID|TRANSCRIPT_BIOTYPE|RANK|HGVS_C|HGVS_P|cDNA_pos/cDNA_length|"
+						"CDS_pos/cDNA_length|AA_pos/AA_length|distance|errors_warnings]")
 		data_to_write = []
 		infoline_parser = snpeff_hgvs_converter
 		for name in gff3.GetChromosomeNames():
@@ -160,7 +161,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					#   "NAVIP_END|"
 					#   "<old info field>"
 					NAVIP_INFO = ""
-					NAVIP_INFO_LIST = [str(transcriptHier.TID) + "|", str(direction) + "|", classificationstring]
+					NAVIP_INFO_LIST = ["NAV1=" + str(transcriptHier.TID) + "|", str(direction) + "|", classificationstring]
 					if shared_effect_list == "":
 						NAVIP_INFO_LIST.append("NONE|")
 					else:
@@ -174,8 +175,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						NAVIP_INFO_LIST.append(str(vinfo.ChangedTriplets) + ";" + str(vinfo.Changed_Raster) + "|")
 					if Alt_AA:
 						NAVIP_INFO_LIST.append(str(vinfo.NewAmino) + "|")
-					NAVIP_INFO_LIST.append(str(vinfo.Changed_CDS_Position) + "|")
-					NAVIP_INFO_LIST.append("NAVIP_END;")
+					NAVIP_INFO_LIST.append(str(vinfo.Changed_CDS_Position) + ";")
 					if Old_Info:
 						if "\n" in vinfo.OLD_Info:
 							NAVIP_INFO_LIST.append(str(vinfo.OLD_Info))
@@ -193,7 +193,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 						+ str(vinfo.Alt) + "\t"
 						+ str(vinfo.Qual) + "\t"
 						+ str(vinfo.Filter) + "\t"
-						+ snpeff_string + ";"
+						+ snpeff_string
 						+ str(NAVIP_INFO))
 			data_to_write = sorted(data_to_write,
 								   key=lambda data_line: (int(data_line.split("\t")[1]), str(data_line.split("\t")[7])))
