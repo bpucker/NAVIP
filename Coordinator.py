@@ -59,16 +59,16 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					   "Strand_Direction|"
 					   "Variant_Classification1,Variant_Classification2,...|"
 					   "Shared_EffKey(s)|"
-					   "REF_Codon(s);Variant_Position_in_Codon|"
+					   "REF_Codon(s)/Variant_Position_in_Codon|"
 					   "REF_AA|"
 					   "old_CDS_Position|"
-					   "ALT_Codon(s);Variant_Position_in_Codon|"
+					   "ALT_Codon(s)/Variant_Position_in_Codon|"
 					   "ALT_AA|"
 					   "new_CDS_Position]>\n")
 
 		vcf_file.write("##Info=<ID=NAV2, Type=String,Number=.,Values=[ALT|ANNOTATIONS|ANNOTATION_IMPACT|GENE_NAME|"
 					   "GENE_ID|FEATURE_TYPE|FEATURE_ID|TRANSCRIPT_BIOTYPE|RANK|HGVS_C|HGVS_P|cDNA_pos/cDNA_length|"
-						"CDS_pos/cDNA_length|AA_pos/AA_length|distance|errors_warnings]")
+						"CDS_pos/CDS_DNA_length|AA_pos/AA_length|distance|errors_warnings]>\n")
 		data_to_write = []
 		infoline_parser = snpeff_hgvs_converter
 		for name in gff3.GetChromosomeNames():
@@ -167,12 +167,12 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					else:
 						NAVIP_INFO_LIST.append(str(shared_effect_list))
 					if Ref_Codons:
-						NAVIP_INFO_LIST.append(str(vinfo.OrigTriplets) + ";" + str(vinfo.OrigRaster) + "|")
+						NAVIP_INFO_LIST.append(str(vinfo.OrigTriplets) + "/" + str(vinfo.OrigRaster) + "|")
 					if Ref_AA:
 						NAVIP_INFO_LIST.append(str(vinfo.OrigAmino) + "|")
 					NAVIP_INFO_LIST.append(str(vinfo.Unchanged_CDS_Position) + "|")
 					if Alt_Codons:
-						NAVIP_INFO_LIST.append(str(vinfo.ChangedTriplets) + ";" + str(vinfo.Changed_Raster) + "|")
+						NAVIP_INFO_LIST.append(str(vinfo.ChangedTriplets) + "/" + str(vinfo.Changed_Raster) + "|")
 					if Alt_AA:
 						NAVIP_INFO_LIST.append(str(vinfo.NewAmino) + "|")
 					NAVIP_INFO_LIST.append(str(vinfo.Changed_CDS_Position) + ";")

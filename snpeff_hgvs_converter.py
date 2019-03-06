@@ -106,11 +106,11 @@ class snpeff_hgvs_converter():
 
 		aa_pos_temp = (vinfo.Unchanged_CDS_Position-1)%3
 		if aa_pos_temp == 0:
-			AA_pos = (vinfo.Unchanged_CDS_Position-1) / 3 + 1 # aa = 0 is the first, not zero
+			AA_pos = (vinfo.Unchanged_CDS_Position-1 +3) / 3  # aa = 0 is the first, not zero
 		elif aa_pos_temp == 1:
-			AA_pos = (vinfo.Unchanged_CDS_Position +1) / 3 + 1
+			AA_pos = (vinfo.Unchanged_CDS_Position-1 +2) / 3
 		elif aa_pos_temp == 2:
-			AA_pos = (vinfo.Unchanged_CDS_Position) / 3 + 1
+			AA_pos = (vinfo.Unchanged_CDS_Position-1 +1) / 3
 		AA_pos = int(AA_pos)
 
 		AA_to_next_stop = -1
@@ -270,7 +270,7 @@ class snpeff_hgvs_converter():
 			# nonsense -> stop gained #LRG_199p1:p.Trp24Ter (p.Trp24*)
 			# silent -> AA is not changed #NP_003997.1:p.Cys188=
 			if vinfo.OrigAmino == vinfo.NewAmino: #silent
-				HGVS_P += oldamino + str(AA_pos) + '='
+				HGVS_P += oldamino + str(AA_pos) + oldamino
 			else: #missense and nonsense
 				HGVS_P += oldamino + str(AA_pos) + newamino
 
@@ -514,7 +514,7 @@ class snpeff_hgvs_converter():
 							b = ""
 							for aa in vinfo.OrigAmino:
 								b += aminodict[aa]
-							HGVS_P += b + str(AA_pos)  + '='
+							HGVS_P += b + str(AA_pos)  + b
 						else:
 							"""
 								p.Cys28delinsTrpVal
@@ -562,7 +562,7 @@ class snpeff_hgvs_converter():
 					if vinfo.OrigAmino == vinfo.NewAmino:
 						#sub
 						#NP_003997.1:p.Cys188=
-						HGVS_P += oldamino + str(AA_pos) + '='
+						HGVS_P += oldamino + str(AA_pos) + oldamino
 					else:
 						try:
 							HGVS_P += oldamino + str(AA_pos) + vinfo.NewAmino[0]
@@ -585,7 +585,7 @@ class snpeff_hgvs_converter():
 					if vinfo.OrigAmino == vinfo.NewAmino:
 						#sub
 						#NP_003997.1:p.Cys188=
-						HGVS_P += oldamino + str(AA_pos) + '='
+						HGVS_P += oldamino + str(AA_pos) + oldamino
 					else:
 						HGVS_P += oldamino + str(AA_pos) + aminodict[vinfo.NewAmino.upper()]
 				elif TranscriptEnum.STOP_GAINED in vinfo.Classification:
