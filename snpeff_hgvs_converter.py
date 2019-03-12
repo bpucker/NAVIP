@@ -83,7 +83,8 @@ class snpeff_hgvs_converter():
 		aminodict['Xaa'] = 'X'
 		#aminodict["*"] = "stop_gained"
 		#aminodict["stop_gained"] = "*"
-
+		if vinfo.ChrPosition == 9504822:
+			print("bugsearch 9504822")
 
 		Annotation = "" 						#1
 		Annotation_Impact = "" 					#2
@@ -295,8 +296,11 @@ class snpeff_hgvs_converter():
 			#	pass
 			else:
 				#first changed aa has to be the first aa here
-				if oldamino[0] != newamino[0]:
-					HGVS_P += oldamino + str(AA_pos) + newamino + 'Ter' + str(vinfo.STOP_CAUSED_IN)
+				if vinfo.OrigAmino[0] != vinfo.NewAmino[0]:
+					if vinfo.STOP_CAUSED_IN == -1:
+						HGVS_P += oldamino + str(AA_pos) + newamino + '*' + '?'
+					else:
+						HGVS_P += oldamino + str(AA_pos) + newamino + '*' + str(vinfo.STOP_CAUSED_IN)
 				else:
 					#find first changed aa....
 					# test every aa, if they are equal, from the variant_position

@@ -345,7 +345,7 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 				oldline = line
 				pos = int(spline[1])
 				pos += -1 + len(spline[3])  # + length of ref, for deletions
-				#i += 1
+				i += 1
 				lines_new.append(line)
 			elif spline[0] == oldline.split("\t")[0]:
 				# print("Removed:\n" + line + "Because of:\n" + oldline)
@@ -355,6 +355,7 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 				VCF_preproc_log.append(oldline)
 				#del lines[i]
 				removedEntries += 1
+				i +=1
 			else:
 				lines_new.append(line)
 				oldline = line
