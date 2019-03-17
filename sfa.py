@@ -864,11 +864,11 @@ def sfa_main(innavipvcf:str, innavipfasta:str, outpath:str):
         count_stuff_unique(InDel_vcf, no_none_vcf, outpath)
 
 
-    time = datetime.now()
-    print("##################################################################################")
-    print("VCF work starting.")
-    vcf_stuff()
-    print("VCF work is done:" + str(datetime.now() - time))
+    #time = datetime.now()
+    #print("##################################################################################")
+    #print("VCF work starting.")
+    #vcf_stuff()
+    #print("VCF work is done:" + str(datetime.now() - time))
     #print("AA work starting.")
     #aa_len_stuff ()
     #print("AA work is done:" + str(datetime.now() - time))
