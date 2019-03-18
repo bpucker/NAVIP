@@ -212,12 +212,6 @@ def find_all_cindels(vcf_file_link:str, mod_or_not: bool, outputfolder: str, max
 
 
 
-vcf_file_link = "/homes/janbaas/NAVIP_prj/members/Snpeff_VS_NAVIP/2019-02-13/neu-validiert/first/All_VCF.vcf"
-find_all_cindels(vcf_file_link, True, "/homes/janbaas/NAVIP_prj/members/Snpeff_VS_NAVIP/jan_spamt/", 55)
-find_all_cindels(vcf_file_link, False,"/homes/janbaas/NAVIP_prj/members/Snpeff_VS_NAVIP/jan_spamt/", 55)
-
-
-
 
 
 
