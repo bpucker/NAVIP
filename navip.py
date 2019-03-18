@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
 
         elif args[args.index("--mode")+1] == "sfa" \
-                and "--innavipfasta" in args\
+                and "--innavipvcf" in args\
                 and "--outpath" in args\
                 and "--bpr" in args:
             print("Start: simple first analysis")
