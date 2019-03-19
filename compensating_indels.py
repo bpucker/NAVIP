@@ -7,6 +7,7 @@ def find_all_cindels(vcf_file_link:str, mod_or_not: bool, outputfolder: str, max
 	vcf_file.close()
 
 	transcript_indels_dict = {}
+	transcript_direction_dict = {}
 
 	for line in vcf_data:
 		if line.startswith('#'):
@@ -15,6 +16,8 @@ def find_all_cindels(vcf_file_link:str, mod_or_not: bool, outputfolder: str, max
 		infoline = spline[7]
 		for info in infoline.split(";"):
 			if info.startswith('NAV1'):
+				# transcript	direction
+				#NAV1=AT1G76520.2|FOR|SUB,Amino acid change|NONE|ATT/0|i|583|GTT/0|v|583;
 				transcript_as_key = str(info.split("|")[0].split('=')[1])
 				effect_annotation = str(info.split("|")[2])
 				new_cds_position = int(info.split("|")[9])
@@ -30,9 +33,10 @@ def find_all_cindels(vcf_file_link:str, mod_or_not: bool, outputfolder: str, max
 				elif Transcript.TranscriptEnum.FRAMESHIFT.value in effect_annotation:
 					print('meh')
 				else:continue
-
+				transcript_direction_dict[transcript_as_key] = info.split("|")[1]
 				if transcript_as_key in transcript_indels_dict:
 					transcript_indels_dict[transcript_as_key].append(stuff)
+
 				else:
 					transcript_indels_dict[transcript_as_key] =  [stuff]
 			else:
@@ -45,6 +49,9 @@ def find_all_cindels(vcf_file_link:str, mod_or_not: bool, outputfolder: str, max
 		if len(t_entrys) > 1:
 			shift =0
 			sub_indel_list = []
+			#testing rev-direction correction
+			if transcript_direction_dict[transcripts] == "REV":
+				t_entrys = t_entrys[::-1]
 			for entry in t_entrys:
 				shift += entry[1] # if this reaches 0 (or mod 3 == 0), the frameshift is (maybe, no stop detection here) compensated
 				sub_indel_list.append(entry) # all entrys needed for one additional compensated fs (could be more than one)
