@@ -467,7 +467,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 
 		table_outputname = "transcripts_isoform_" + mode_name + '.txt'
 		description = "#transcripts with X indels" + "\n"
-		description += "#bp_between_compensation_fs" + "".join(key_output) + "\n"
+		description += "#distance_between_compensation_fs" + "".join(key_output) + "\n"
 
 		table_output_file = open(outputfolder + table_outputname, 'w')
 		table_output_file.write(description + "\n".join(normal_output_with_zeros))
@@ -494,9 +494,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 
 		table_outputname = "transcripts_isoform_" + mode_name + '_TIDs' + '.txt'
 		description = "#Header: > <bp> <quantity of involved InDels for one compensating InDel (cInDel) event>  \n"
-		description += "#Data line: <tid|cInDel-event 1| cInDel-event2| ....> \n"
-		description += "#cInDel-event:<Chr>,<Pos>,<CDS-Pos>,<frameshift-value>;<Chr>,<Pos>,<CDS-Pos>,<frameshift-value> [...]\n"
-		description += "#frameshift-value: integer values: deletion: -1,-2 bases; insertion: 1,2 bases\n"
+		description += "#Data line: <tid>,<tid>....<tid> max 10x per line \n"
 
 		table_output_file = open(outputfolder + table_outputname , 'w')
 		table_output_file.write(description + "".join(involved_tid_list_output))
@@ -543,7 +541,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 
 		table_outputname = "transcripts_unique_" + mode_name + '.txt'
 		description = "#transcripts with X indels" + "\n"
-		description += "#bp_between_compensation_fs" + "".join(key_output) + "\n"
+		description += "#distance_between_compensation_fs" + "".join(key_output) + "\n"
 
 		table_output_file = open(outputfolder + table_outputname, 'w')
 		table_output_file.write(description + "\n".join(normal_output_with_zeros))
@@ -581,9 +579,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 			i += 1
 
 		description = "#Header: > <bp> <quantity of involved InDels for one compensating InDel (cInDel) event>  \n"
-		description += "#Data line: <tid|cInDel-event 1| cInDel-event2| ....> \n"
-		description += "#cInDel-event:<Chr>,<Pos>,<CDS-Pos>,<frameshift-value>;<Chr>,<Pos>,<CDS-Pos>,<frameshift-value> [...]\n"
-		description += "#raster-change-value: integer values: deletion: -1,-2 bases; insertion: 1,2 bases\n"
+		description += "#Data line: <tid>,<tid>....<tid> max 10x per line \n"
 
 		table_outputname = "transcripts_unique_" + mode_name + '_TIDs' + '.txt'
 		table_output_file = open(outputfolder + table_outputname , 'w')
@@ -636,13 +632,13 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 			involved_tid_list_detailed_output.append(">" + str(bpr) +" " + str(quantity) + "\n")
 			for tid in detailed_output_stuff_dict[(bpr,quantity)]:
 				involved_tid_list_detailed_output.append(str(tid) + "|")
+				i = len(detailed_output_stuff_dict[(bpr, quantity)][tid])
 				for cindel_details_list in detailed_output_stuff_dict[(bpr,quantity)][tid]:
 					cindel_events_list = cindel_details_list.split("|")
-					i = len(detailed_output_stuff_dict[(bpr,quantity)][tid])
 					for cindel_event in cindel_events_list:
 						#cindel_event should be a string
 						i -= 1
-						involved_tid_list_detailed_output.append(cindel_event[0:len(cindel_event)-1])# -2 because of ignoring the last ";"
+						involved_tid_list_detailed_output.append(cindel_event[0:len(cindel_event)-1])# -1 because of ignoring the last ";"
 						if i != 0:
 							involved_tid_list_detailed_output.append("|")
 				involved_tid_list_detailed_output.append("\n")
@@ -662,9 +658,9 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 		description = "#Header: > <bp> <quantity of involved InDels for one compensating InDel (cInDel) event>  \n"
 		description += "#Data line: <tid|cInDel-event 1| cInDel-event2| ....> \n"
 		description += "#cInDel-event:<Chr>,<Pos>,<CDS-Pos>,<frameshift-value>;<Chr>,<Pos>,<CDS-Pos>,<frameshift-value> [...]\n"
-		description += "#raster-change-value: integer values: deletion: -1,-2 bases; insertion: 1,2 bases\n"
+		description += "#frameshift-value: integer values: deletion: -1,-2 bases; insertion: 1,2 bases\n"
 
-		table_outputname = "transcripts_unique_" + mode_name + '_TIDs_detailed' + '.txt'
+		table_outputname = "transcripts_isoform_" + mode_name + '_TIDs_detailed' + '.txt'
 		table_output_file = open(outputfolder + table_outputname, 'w')
 		table_output_file.write(description + "".join(involved_tid_list_detailed_output))
 		table_output_file.close()
@@ -717,7 +713,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 		description += "#Data line: <tid>,<quantity cindel-events>|<max_bpr>,<InDel_quantity>,cInDel-event 1|<bpr><InDel_quantity>,cInDel-event2| ....> \n"
 		description += "#cInDel-event:<Chr>,<Pos>,<CDS-Pos>,<frameshift-value>;<Chr>,<Pos>,<CDS-Pos>,<frameshift-value> [...]\n"
 
-		table_outputname = "transcripts_unique_" + mode_name + '_TIDs_detailed_sorted_by_TID' + '.txt'
+		table_outputname = "transcripts_isoform_" + mode_name + '_TIDs_detailed_sorted_by_TID' + '.txt'
 		table_output_file = open(outputfolder + table_outputname, 'w')
 		table_output_file.write(description + "".join(output_sorted_by_tid))
 		table_output_file.close()
