@@ -466,7 +466,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 			#highest_cindel_combo
 
 		table_outputname = "transcripts_isoform_" + mode_name + '.txt'
-		description = "#transcripts with X indels - " + str(mode_name) + "\n"
+		description = "#transcripts with X indels" + "\n"
 		description += "#bp_between_compensation_fs" + "".join(key_output) + "\n"
 
 		table_output_file = open(outputfolder + table_outputname, 'w')
@@ -542,7 +542,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 		# highest_cindel_combo
 
 		table_outputname = "transcripts_unique_" + mode_name + '.txt'
-		description = "#transcripts with X indels - " + str(mode_name) + "\n"
+		description = "#transcripts with X indels" + "\n"
 		description += "#bp_between_compensation_fs" + "".join(key_output) + "\n"
 
 		table_output_file = open(outputfolder + table_outputname, 'w')
