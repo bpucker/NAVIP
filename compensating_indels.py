@@ -343,10 +343,11 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 						if shift % 3 == 0:  # compensation
 							#sub_indel_list: <class 'list'>: [(16, 2, 'Chr1', 354830), (43, 1, 'Chr1', 354811)]
 							max_dist = 0
-							for i, entrys in enumerate(sub_indel_list[1:]):
+							#for i, entrys in enumerate(sub_indel_list[1:]):
 								# i should be one less, then the current position of the list, because list starts at 1
-								last_entry = sub_indel_list[i]
-								max_dist = max((abs(entrys[0] - last_entry[0]), max_dist))
+							#	last_entry = sub_indel_list[i]
+							#	max_dist = max((abs(entrys[0] - last_entry[0]), max_dist))
+							max_dist = abs(sub_indel_list[0][0] - sub_indel_list[len(sub_indel_list)-1][0])
 							# new_cindel : <class 'tuple'>: ('AT1G02020.1', 2, [(16, 2, 'Chr1', 354830), (43, 1, 'Chr1', 354811)], 27)
 							new_cindel = (transcripts,len(sub_indel_list),sub_indel_list,max_dist)
 							new_cindel_unique = (transcripts.split(".")[0],len(sub_indel_list),sub_indel_list,max_dist)
@@ -370,10 +371,11 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 					if not mod_or_not:
 						if shift == 0:  # compensation
 							max_dist = 0
-							for i, entrys in enumerate(sub_indel_list[1:]):
-								# i should be one less, then the current position of the list, because list starts at 1
-								last_entry = sub_indel_list[i]
-								max_dist = max((abs(entrys[0] - last_entry[0]), max_dist))
+							#for i, entrys in enumerate(sub_indel_list[1:]):
+							#	# i should be one less, then the current position of the list, because list starts at 1
+							#	last_entry = sub_indel_list[i]
+							#	max_dist = max((abs(entrys[0] - last_entry[0]), max_dist))
+							max_dist = abs(sub_indel_list[0][0] - sub_indel_list[len(sub_indel_list) - 1][0])
 
 							new_cindel = (transcripts, len(sub_indel_list), sub_indel_list, max_dist)
 							new_cindel_unique = (
@@ -689,10 +691,11 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 				entry_i -= 1
 				indel_list = value.split(";")
 				max_bpr = 0
-				old_indel = indel_list[0]
-				for indel in indel_list[1:]:
-					max_bpr = max([abs(int(old_indel.split(",")[2]) - int(indel.split(",")[2])), max_bpr])
-					old_indel = indel
+				#old_indel = indel_list[0]
+				#for indel in indel_list[1:]:
+				#	max_bpr = max([abs(int(old_indel.split(",")[2]) - int(indel.split(",")[2])), max_bpr])
+				#	old_indel = indel
+				max_bpr = abs(int(indel_list[0].split(",")[2]) - int(indel_list[len(indel_list) - 1].split(",")[2]))
 				output_sorted_by_tid.append(str(max_bpr) + "," + str(len(indel_list)) +",")
 				i = len(indel_list)
 				for stuff in indel_list:
