@@ -83,8 +83,6 @@ class snpeff_hgvs_converter():
 		aminodict['Xaa'] = 'X'
 		#aminodict["*"] = "stop_gained"
 		#aminodict["stop_gained"] = "*"
-		if vinfo.ChrPosition == 9504822:
-			print("bugsearch 9504822")
 
 		Annotation = "" 						#1
 		Annotation_Impact = "" 					#2
