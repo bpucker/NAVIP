@@ -25,7 +25,7 @@ class GFF3_Handler_V3:
 		gff3 = open(GFF3_DATA_PATH, 'r')
 		lines = gff3.readlines()
 		gff3.close()
-
+		count_generic_id = 0
 		for line in lines:
 			if line.startswith('#') or len(line) <=2:
 				continue
@@ -40,6 +40,11 @@ class GFF3_Handler_V3:
 			atts = spline[8].split(';')
 			gff3_id = ""
 			parent = ""
+			if "ID=" not in spline[8]:
+				#create generic_id: chr_type_start_end
+				generic_id = str(spline[0]) + '_' + str(spline[1]) + '_' + str(spline[3]) + '_' + str(spline[4])
+
+
 			for att in atts:
 				if 'ID=' in att:
 					gff3_id = att[3:].replace("\n","")
@@ -50,9 +55,11 @@ class GFF3_Handler_V3:
 					else:
 						parent = [parent]
 			if gff3_id == "":
-				print(line)
-				print("Item(s) without ID - is it really gff version 3?(or empty lines....)")
-				sys.exit()
+				count_generic_id +=1
+				gff3_id = generic_id
+				#print(line)
+				#print("Item(s) without ID - is it really gff version 3?(or empty lines....)")
+				#sys.exit()
 			try:
 				self.gff3_ID_Dict[seqid,gff3_id].append(spline)
 			except KeyError:
@@ -166,9 +173,17 @@ class GFF3_Handler_V3:
 		"""
 		return self.dict_Chr_dict_Transcript[ChrName]
 
+	def freeRAM (self, ChrName: str):
+		"""
+		Frees the RAM.
+		:param ChrName:
+		:return:
+		"""
+		self.dict_Chr_dict_Transcript[ChrName] = []
+		self.List_Of_Transcripts[ChrName] = []
+
 	def GetChrTranscriptList(self,ChrName:str):
 		return self.List_Of_Transcripts[ChrName]
-
 
 	def sortTranscripts(self):
 		for chrName in self.List_Of_Transcripts.keys():
