@@ -25,7 +25,7 @@ class VCF_HANDLER:
 		countChr = 0
 
 		with open(VCF_DATA_PATH, "r") as DataFile :
-			id = 0;
+			id = 0
 			lines = DataFile.readline()
 			while (lines.startswith("#")):
 				lines = DataFile.readline()
@@ -142,6 +142,10 @@ class VCF_HANDLER:
 			return self.VCF_Variant_List[self.dictChrNames[ChrName]]
 		except KeyError as e:
 			return []
+
+	def freeRam(self,ChrName:str):
+
+		self.VCF_Variant_List[self.dictChrNames[ChrName]] = []
 
 
 class NAVIP_VCF_File_Manager():

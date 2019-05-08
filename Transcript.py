@@ -38,6 +38,10 @@ class TranscriptEnum (Enum):
 	START_LOST = "Start lost"
 	MISSENSE_VARIANT = "MISSENSE_VARIANT".lower() # http://sequenceontology.org/browser/current_svn/term/SO:0001583
 
+	#errors/warnings
+	UNKNOWN_NUKLEOTIDE = "UNKNOWN_NUKLEOTIDE".lower()
+	UNKNOWN_AMINOACID = "UNKNOWN_AMINOACID".lower()
+
 	# when the transcript structure is damaged
 	CDS_START_INVOLVED = "Hits before Start into CDS"
 	CDS_STOP_INVOLVED = "Hits CDS Stop and after"
@@ -865,6 +869,10 @@ class Transcript:
 			self.Lost_Stop = False
 		if len(vinfo.ChangedTriplets) % 3 != 0 or len(vinfo.OrigTriplets) % 3 != 0 or len(vinfo.OrigRevTriplets) % 3 != 0 or len(vinfo.ChangedRevTriplets) % 3 != 0:
 			self.origDNAtoshort = True # not really orgiDNA, others too, but hey, it works
+		if 'n' in vinfo.ChangedTriplets.lower():
+			vinfo.Classification.append(TranscriptEnum.UNKNOWN_NUKLEOTIDE)
+		if 'x' in vinfo.NewAmino.lower():
+			vinfo.Classification.append(TranscriptEnum.UNKNOWN_AMINOACID)
 
 	def IV_Local_Effect_Length(self, vinfo: Variant_Information_Storage):
 		"""
@@ -1285,33 +1293,91 @@ class Transcript:
 		if len(variant.Reference) > 1:  # DEL
 			if largerImpactDeletion[0] != largerImpactDeletion[1]:
 				self.Transcript_CDS_damaged = True
-				self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
+				is_it_already_in = False
+				for variant_in_list in self.IntegratedVariantObjects_CDS_Hits:
+					current_pos = variant_in_list.ChrPosition
+					if current_pos == variant.Position:
+						is_it_already_in = True
+						break
+				if not is_it_already_in:
+					self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
 				if largerImpactDeletion[1] % 1 == float(0):
 					newEntry.Classification.append(TranscriptEnum.CDS_INTRON_DELETION)
 				elif largerImpactDeletion[1] % 1 == float(0.5):
 					newEntry.Classification.append(TranscriptEnum.CDS_EXON_DELETION)
 				else:
 					LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
-										  "Possible bug in Add_Variant_Information: " + str(self.TID) + "\t" + str(
+										  "Error 1 :Possible bug in Add_Variant_Information: " + str(self.TID) + "\t" + str(
 											  variant.Position) + "\n")
 				#self.IV_CDS_Damaging_Variant_Handler(newEntry)
 			if type(CDS_Position) == int and cds_2 == TranscriptEnum.POSITION_NOT_IN_CDS:
 				self.Transcript_CDS_damaged = True
-				self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
+				is_it_already_in = False
+				for variant_in_list in self.IntegratedVariantObjects_CDS_Hits:
+					current_pos = variant_in_list.ChrPosition
+					if current_pos == variant.Position:
+						is_it_already_in = True
+						break
+				if not is_it_already_in:
+					self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
 				self.IV_CDS_Damaging_Variant_Handler(newEntry)
 			elif CDS_Position == TranscriptEnum.POSITION_NOT_IN_CDS and type(cds_2) == int:
 				self.Transcript_CDS_damaged = True
-				self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
+				is_it_already_in = False
+				for variant_in_list in self.IntegratedVariantObjects_CDS_Hits:
+					current_pos = variant_in_list.ChrPosition
+					if current_pos == variant.Position:
+						is_it_already_in = True
+						break
+				if not is_it_already_in:
+					self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
 				self.IV_CDS_Damaging_Variant_Handler(newEntry)
-
-		if CDS_Position == TranscriptEnum.POSITION_NOT_IN_CDS:
-			self.IntegratedVariantObjects_NotCDS.append(newEntry)
-		elif type(CDS_Position) == int :
-			self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
-			return newEntry
+			elif CDS_Position == TranscriptEnum.POSITION_NOT_IN_CDS and cds_2 == TranscriptEnum.POSITION_NOT_IN_CDS:
+				is_it_already_in = False
+				for variant_in_list in self.IntegratedVariantObjects_NotCDS:
+					current_pos = variant_in_list.ChrPosition
+					if current_pos == variant.Position:
+						is_it_already_in = True
+						break
+				if not is_it_already_in:
+					self.IntegratedVariantObjects_NotCDS.append(newEntry)
+			elif type(CDS_Position) == int and type (cds_2) == int:
+				is_it_already_in = False
+				for variant_in_list in self.IntegratedVariantObjects_CDS_Hits:
+					current_pos = variant_in_list.ChrPosition
+					if current_pos == variant.Position:
+						is_it_already_in = True
+						break
+				if not is_it_already_in:
+					self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
+			else:
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
+									  "Error 2 :Possible bug in Add_Variant_Information: " + str(self.TID) + "\t" + str(
+										  variant.Position) + "\n")
+			# print("Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n")
 		else:
-			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n" )
-			#print("Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n")
+			if CDS_Position == TranscriptEnum.POSITION_NOT_IN_CDS:
+				is_it_already_in = False
+				for variant_in_list in self.IntegratedVariantObjects_NotCDS:
+					current_pos = variant_in_list.ChrPosition
+					if current_pos == variant.Position:
+						is_it_already_in = True
+						break
+				if not is_it_already_in:
+					self.IntegratedVariantObjects_NotCDS.append(newEntry)
+			elif type(CDS_Position) == int :
+				is_it_already_in = False
+				for variant_in_list in self.IntegratedVariantObjects_CDS_Hits:
+					current_pos = variant_in_list.ChrPosition
+					if current_pos == variant.Position:
+						is_it_already_in = True
+						break
+				if not is_it_already_in:
+					self.IntegratedVariantObjects_CDS_Hits.append(newEntry)
+				return newEntry
+			else:
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG, "Error 3 :Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n" )
+				#print("Possible bug in Add_Variant_Information: " + str(self.TID) +"\t"+ str(variant.Position) + "\n")
 
 	def Remove_Mult_Allel_Entry_In_All_Variant_Information(self, zero_or_one: int):
 		"""
@@ -1627,6 +1693,7 @@ class Transcript:
 		elif raster == 1:
 			erg = 1
 		elif raster == 2:
+			erg = 3
 			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
 								  "checkLastVariants\t" + str(self.TID) + "\tIV_Changed_DNA_CDS_Seq\n")
 			pass

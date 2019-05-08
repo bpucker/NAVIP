@@ -229,7 +229,7 @@ def do_magic_plotting(data:list, outputfolder:str, orig_outputname:str, formats:
 		all_bars[i] = [] #initialization of bars
 
 	x_axsis = []
-	for dataline in data[0:30]:
+	for dataline in data[0:60]:
 		dataline = dataline.split("\t")
 		x_axsis.append(int(dataline[0]))  # bpr
 		for i in range(1, max_coloumns_so_bars):
@@ -295,12 +295,16 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 				continue
 			spline = line.split('\t')
 			infoline = spline[7]
+			broken = False
 			for info in infoline.split(";"):
 				if info.startswith('NAV1'):
 					# transcript	direction
 					# NAV1=AT1G76520.2|FOR|SUB,Amino acid change|NONE|ATT/0|i|583|GTT/0|v|583;
 					transcript_as_key = str(info.split("|")[0].split('=')[1])
 					effect_annotation = str(info.split("|")[2])
+					if len(info.split("|")) != 10:
+						broken =True
+						break
 					new_cds_position = int(info.split("|")[9])
 
 					if Transcript.TranscriptEnum.FRAMESHIFT_2_DEL.value in effect_annotation:
@@ -323,6 +327,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 
 				else:
 					continue
+			continue
 
 		possible_neutralizing_indel_transcripts_experimental = {}
 		possible_neutralizing_indel_transcripts_experimental_unique = {}

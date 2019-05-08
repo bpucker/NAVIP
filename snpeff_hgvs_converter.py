@@ -226,7 +226,7 @@ class snpeff_hgvs_converter():
 				HGVS_C += str(vinfo.Unchanged_CDS_Position +1) + '_' + str(vinfo.Unchanged_CDS_Position + len(vinfo.Ref)) + 'del' + vinfo.Ref[1:]
 			#print(HGVS_C)
 		else:
-			print("Something unexpected happened in the snpeff_hgvs_converter converter.")
+			LogOrganizer.addToLog(LogEnums.CONVERTER_LOG,"No Classification in: " + str(transcript.TID) + "\t" + str(vinfo.ChrPosition))
 
 		#HGVS_P
 		HGVS_P = "p."
@@ -616,8 +616,12 @@ class snpeff_hgvs_converter():
 						a deletion of amino acids Cys28 and Ly29, replaced with Trp
 					"""
 					HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + "_" + aminodict[vinfo.OrigAmino[len(vinfo.OrigAmino)-1].upper()] + str(AA_pos + len(vinfo.OrigAmino)) + 'delins'
+		elif TranscriptEnum.UNKNOWN_AMINOACID in vinfo.Classification :
+			# this here should be an substitution of X into X (because bad chromosome data)
+			HGVS_P += oldamino + str(AA_pos) + newamino
 		else:
-			print('what did i forget?')
+			LogOrganizer.addToLog(LogEnums.CONVERTER_LOG,"No Classification in: " + str(transcript.TID) + "\t" + str(vinfo.ChrPosition))
+
 		snpeff_like_info_string = 'NAV2=' + vinfo.Alt + '|' \
 								  + Annotation + "|" \
 								  + Annotation_Impact + "|" \
