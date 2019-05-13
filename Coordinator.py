@@ -726,6 +726,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		# The connection triggers a first evaluation of the variants, too.
 		###
 		transcriptRange = 300 # base pairs before RNA starts and after RNA ends. Just in Case for long InDels.
+		variant_transcript_exceeding_warning_int = transcriptRange / 100
 		phasingWarning = True
 		print("Connect transcripts with variants")
 		print("ram in mbyte\t" + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
@@ -842,8 +843,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				continue
 			if currentTranscript.Transcript_CDS_damaged:
 				continue
-			if nr_transcripts_current % 100 == 0:
-				print(str(nr_transcripts_current) + " ram in mbyte\t" + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
+			#if nr_transcripts_current % 100 == 0:
+			#	print(str(nr_transcripts_current) + " ram in mbyte\t" + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
 			currentTranscript.Create_IV_Changed_DNA_CDS_Seq(genetic_code, currentTranscript.IntegratedVariantObjects_CDS_Hits,
 															stopcodon)
 			if currentTranscript.Lost_Stop and stopcodon in currentTranscript.IV_ChangedTranslation:
@@ -855,8 +856,6 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			i = 0
 			while currentTranscript.Lost_Stop:
 				i+=1
-				if currentTranscript.TID == "Ma08_t12340.1":
-					print(i)
 				#print(currentTranscript.TID)
 				currentTranscript.Create_IV_ChangedTranslation(genetic_code)
 				if stopcodon in currentTranscript.IV_ChangedTranslation:
@@ -891,19 +890,21 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					# +2 positions means 2 potential more variant effects.
 					# repeatly, and check if deletions now have a new effect, because in rev cds it can be .... .... ....
 					# and it is possible, that damaged transcripts (rev cds) is still functional because of this, meeeh fuck it
+				if i > variant_transcript_exceeding_warning_int:
+					print(str(currentTranscript.TID) + " exceeds variation range limit of " + str(variant_transcript_exceeding_warning_int*100) + " nucleotides.")
+				if i == 10:
+					print("improvement(bugsearch) search")
 				if i == 20:
 					currentTranscript.Transcript_CDS_damaged = True
-					print("transcript somehow broken: " + str(currentTranscript.TID))
+					print("transcript "+ str(currentTranscript.TID) + " declared as broken, after extending it by: " +str(i*100) + " nucleotides." )
 					break
 			j = 0
 			while currentTranscript.origDNAtoshort:
 				#print(currentTranscript.TID)
 				j +=1
-				if currentTranscript.TID == "Ma08_t12340.1":
-					print(j)
 				if j == 5:
 					currentTranscript.Transcript_CDS_damaged = True
-					print("transcript somehow broken: " + str(currentTranscript.TID))
+					print("transcript " + str(currentTranscript.TID) + " declared as broken, after extending it " + str(j) + " times unsuccessfully." )
 					break
 				currentTranscript.checkLastVariants(ghandler, genetic_code, stopcodon)
 		#print("Done: " + str(datetime.now() - timeStart))
