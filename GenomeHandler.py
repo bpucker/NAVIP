@@ -103,14 +103,22 @@ class GenomeHandler():
         :param EndPosition: The end position inside the chromosome (not inside the string!)
         :return: A sequence of bases or a single base.
         """
-        try:
-            a = self.dictChrName[ChrName]
-            if StartPosition != EndPosition:
-                return (self.originChromosomeData[self.dictChrName[ChrName]])[StartPosition-1:EndPosition]
+
+        if StartPosition > len(self.originChromosomeData[self.dictChrName[ChrName]]):
+            raise SequenceHandlingError("", Fasta_Enum.STARTPOSITION)
+        elif StartPosition < 0: # reverse transcripts can do this
+            if EndPosition < 0:
+                raise SequenceHandlingError("", Fasta_Enum.STARTPOSITION)
             else:
-                return self.singleSeq(ChrName, StartPosition)
-        except KeyError as e:
-            return []
+                raise SequenceHandlingError(str((self.originChromosomeData[self.dictChrName[ChrName]])[0:EndPosition-1]), Fasta_Enum.STARTPOSITION)
+        if EndPosition > len(self.originChromosomeData[self.dictChrName[ChrName]]):
+            raise SequenceHandlingError(str((self.originChromosomeData[self.dictChrName[ChrName]])[StartPosition-1:]), Fasta_Enum.ENDPOSITION)
+
+        if StartPosition != EndPosition:
+            return (self.originChromosomeData[self.dictChrName[ChrName]])[StartPosition-1:EndPosition]
+        else:
+            return self.singleSeq(ChrName, StartPosition)
+
 
     def GetChromosome (self, ChrName:str)  -> str:
         """
@@ -131,3 +139,17 @@ class Fasta_Enum(Enum):
     nAA = "nAA"     #new AA sequence
     ouchDNA = "ouchDNA" # old unchanged DNA
     ouchAA = "ouchAA" # old unchanged AA
+    STARTPOSITION = "Startposition is outside the contig/chrom." # error message for starting positions (pos 100 000 but contig length is 90 000)
+    ENDPOSITION = "Endposition is outside the contig/chrom." #same but with ending position
+
+class SequenceHandlingError(Exception):
+    """Exception raised for errors in the input.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, sequence_part, description):
+        self.sequence_part = sequence_part
+        self.description = description

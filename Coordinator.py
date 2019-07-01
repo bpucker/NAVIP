@@ -3,7 +3,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 
 import copy #to copy objects
-from GenomeHandler import GenomeHandler, Fasta_Enum
+from GenomeHandler import GenomeHandler, Fasta_Enum, SequenceHandlingError
 from VCF_Handler import VCF_HANDLER
 from VCF_Variant import Variant, VariantEnum
 from Transcript import Transcript, TranscriptEnum, For_Type_Safety_and_statics
@@ -102,6 +102,10 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 
 			for vinfo in transcriptHier.IntegratedVariantObjects_CDS_Hits:
 				vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
+				if vinfo.ChrPosition == 5921700 and transcriptHier.TID == "Ma09_t08910.1":
+					print("bugsearch")
+				if vinfo.ChrPosition == 3917462 and transcriptHier.TID == "Ma00_t01100.1":
+					print("bugsearch")
 				try:
 					snpeff_string = infoline_parser.convert_main(infoline_parser,transcriptHier,vinfo)
 				except:
@@ -407,10 +411,20 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					elif TranscriptEnum.DELETION in vinfo.Classification:
 
 						# Variant <-> Fasta Check
-
-						if vinfo.Ref != ghandler.seq(chrName, vinfo.ChrPosition, vinfo.ChrPosition + len(vinfo.Ref) - 1):
+						try:
+							if vinfo.Ref != ghandler.seq(chrName, vinfo.ChrPosition, vinfo.ChrPosition + len(vinfo.Ref) - 1):
+								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,
+									"DELETION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+						except SequenceHandlingError as she:
 							LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,
-								"DELETION_REF != Fasta-Seq: " + str(currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+												  str(she.description) + str(
+													  currentTranscript.TID) + "\t" + str(vinfo.ChrPosition) + "\n")
+							if vinfo.Ref != she.sequence_part:
+								#ghandler.seq(chrName, vinfo.ChrPosition,#vinfo.ChrPosition + len(vinfo.Ref) - 1):
+								LogOrganizer.addToLog(LogEnums.COORDINATOR_COMPLETE_CHECK_LOG,
+													  "DELETION_REF != Fasta-Seq: " + str(
+														  currentTranscript.TID) + "\t" + str(
+														  vinfo.ChrPosition) + "\n")
 
 						# Variant <-> Transcript with Direction Check
 						if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
@@ -682,9 +696,12 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	print("ram in mbyte\t" + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
 	#######################################
 	print("Chromosome:Names")
-	print("GFF3:" + str(gff3.GetChromosomeNames()))
-	print("VCF:" + str(vcf.GetChromosomeNames()))
-	print("fasta:" + str(ghandler.GetChromosomeNames()))
+	if len(gff3.GetChromosomeNames()) < 10: print("GFF3: " + str(gff3.GetChromosomeNames()))
+	else: print("GFF3: " + str(len(gff3.GetChromosomeNames())) + " contigs/chromosomes.")
+	if len(vcf.GetChromosomeNames()) < 10: print("VCF: " + str(vcf.GetChromosomeNames()))
+	else: print("GFF3: " + str(len(vcf.GetChromosomeNames())) + " contigs/chromosomes.")
+	if len(ghandler.GetChromosomeNames()) < 10: print("fasta: " + str(ghandler.GetChromosomeNames()))
+	else: print("fasta:" + str(len(ghandler.GetChromosomeNames())) + " contigs/chromosomes.")
 	Shared_Chromosomes = []
 	Shared_Chromosomes_FA_GFF3 = []
 	#######################################
@@ -695,7 +712,9 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			Shared_Chromosomes.append(name)
 		if name in ghandler.GetChromosomeNames():
 			Shared_Chromosomes_FA_GFF3.append(name)
-	print("Shared_Chromosomes(all):" + str(Shared_Chromosomes))
+	if len(Shared_Chromosomes) < 10: print(print("Shared_Chromosomes(all):" + str(Shared_Chromosomes)))
+	else: print("Shared_Chromosomes(all):" + str(len(Shared_Chromosomes)) + " contigs/chromosomes.")
+
 	#print("Shared_Chromosomes, fasta, gff3 (and used):" + str(Shared_Chromosomes_FA_GFF3))
 	### For Writing the CDS
 	### in all transcripts
@@ -715,7 +734,13 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 		#		trancripts[i].ReverseTheCDS()
 
 		for trancript in gff3.GetChrTranscriptsDict(name).values():
-			trancript.CompleteTheCDS(ghandler.seq(name, trancript.StartOfRNA, trancript.EndOfRNA), genetic_code)
+			try:
+				trancript.CompleteTheCDS(ghandler.seq(name, trancript.StartOfRNA, trancript.EndOfRNA), genetic_code)
+			except SequenceHandlingError as she:
+				LogOrganizer.addToLog(LogEnums.COORDINATOR_TRANSCRIPT_LOG, str(trancript.TID) + "\t"
+									  + str(trancript.StartOfRNA) + "\t" + str(trancript.EndOfRNA) + "\t" + str(she.description))
+				if she.sequence_part != "":
+					trancript.CompleteTheCDS(she.sequence_part, genetic_code)
 			if trancript.ForwardDirection == TranscriptEnum.REVERSE:
 				trancript.ReverseTheCDS(genetic_code)
 		#print("Done: " + str(datetime.now() - timeStart))
@@ -845,6 +870,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				continue
 			#if nr_transcripts_current % 100 == 0:
 			#	print(str(nr_transcripts_current) + " ram in mbyte\t" + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
+			if 'Ma09_t08910.1' == currentTranscript.TID:
+				print("bugsearch")
 			currentTranscript.Create_IV_Changed_DNA_CDS_Seq(genetic_code, currentTranscript.IntegratedVariantObjects_CDS_Hits,
 															stopcodon)
 			if currentTranscript.Lost_Stop and stopcodon in currentTranscript.IV_ChangedTranslation:
@@ -872,9 +899,28 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 				# print ("Lost_Stop not completely inside transcript.")
 				lastPosInCDS = currentTranscript.LastCDSPosition
 				if currentTranscript.ForwardDirection == TranscriptEnum.FORWARD:
-					nextDNA = ghandler.seq(name, lastPosInCDS + 1, lastPosInCDS + 100)
+					try:
+						nextDNA = ghandler.seq(name, lastPosInCDS + 1, lastPosInCDS + 100)
+					except SequenceHandlingError as she:
+						LogOrganizer.addToLog(LogEnums.COORDINATOR_TRANSCRIPT_LOG, str(currentTranscript.TID) + "\t" + she.description)
+						if she.sequence_part == "":
+							print("transcript " + str(currentTranscript.TID) + " declared as broken(circular?). It reached the end of the contig/chrom.")
+							currentTranscript.Transcript_CDS_damaged = True
+							break
+						else:
+							nextDNA = she.sequence_part
+
 				elif currentTranscript.ForwardDirection == TranscriptEnum.REVERSE:
-					nextDNA = ghandler.seq(name, lastPosInCDS - 100, lastPosInCDS - 1)
+					try:
+						nextDNA = ghandler.seq(name, lastPosInCDS - 100, lastPosInCDS - 1)
+					except SequenceHandlingError as she:
+						LogOrganizer.addToLog(LogEnums.COORDINATOR_TRANSCRIPT_LOG,str(currentTranscript.TID) + "\t" + she.description)
+						if she.sequence_part == "":
+							print("transcript " + str(currentTranscript.TID) + " declared as broken(circular?). It reached the end of the contig/chrom.")
+							currentTranscript.Transcript_CDS_damaged = True
+							break
+						else:
+							nextDNA = she.sequence_part
 					#nextDNA = For_Type_Safety_and_statics.ReverseSeq(nextDNA) #reverse, because it will be added to the already reversed dna transcript
 				else:
 					LogOrganizer.addToLog(LogEnums.COORDINATOR_BUGHUNTING_LOG,"Error: No Direction: " + str(currentTranscript.TID)+"\n")
@@ -890,10 +936,8 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 					# +2 positions means 2 potential more variant effects.
 					# repeatly, and check if deletions now have a new effect, because in rev cds it can be .... .... ....
 					# and it is possible, that damaged transcripts (rev cds) is still functional because of this, meeeh fuck it
-				if i > variant_transcript_exceeding_warning_int:
-					print(str(currentTranscript.TID) + " exceeds variation range limit of " + str(variant_transcript_exceeding_warning_int*100) + " nucleotides.")
-				if i == 10:
-					print("improvement(bugsearch) search")
+				if i == variant_transcript_exceeding_warning_int +1:
+					print(str(currentTranscript.TID) + " exceeds variation range limit of " + str(int(variant_transcript_exceeding_warning_int*100)) + " nucleotides.")
 				if i == 20:
 					currentTranscript.Transcript_CDS_damaged = True
 					print("transcript "+ str(currentTranscript.TID) + " declared as broken, after extending it by: " +str(i*100) + " nucleotides." )
@@ -902,7 +946,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 			while currentTranscript.origDNAtoshort:
 				#print(currentTranscript.TID)
 				j +=1
-				if j == 5:
+				if j == 10:
 					currentTranscript.Transcript_CDS_damaged = True
 					print("transcript " + str(currentTranscript.TID) + " declared as broken, after extending it " + str(j) + " times unsuccessfully." )
 					break

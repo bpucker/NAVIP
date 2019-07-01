@@ -5,7 +5,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 from enum import Enum, unique
 from VCF_Variant import Variant,VariantEnum
 from LogOrganizer import LogEnums, LogOrganizer
-from GenomeHandler import GenomeHandler
+from GenomeHandler import GenomeHandler,SequenceHandlingError,Fasta_Enum
 
 
 
@@ -340,11 +340,12 @@ class Transcript:
 			#self.Rev_CDS = For_Type_Safety_and_statics.BioReverseSeq(self.Complete_CDS)
 			self.IV_Changed_DNA_CDS_Seq = self.Rev_CDS
 
-
 		IntegratedVariantObjects = sorted(IntegratedVariantObjects, key = lambda variant_information: variant_information.Unchanged_CDS_Position)
 		# list needs to be ordered after position, so the new cds position can be calculated.
 		# because every variants cds position can be changed with previous indels.
 		for vinfo in IntegratedVariantObjects:
+			if vinfo.ChrPosition == 5921700 and self.TID == "Ma09_t08910.1":
+				print('bugsearch')
 
 			if self.ForwardDirection == TranscriptEnum.FORWARD:
 				alt = vinfo.Alt
@@ -1083,7 +1084,7 @@ class Transcript:
 		variantlist = []
 		for vinfo in self.IntegratedVariantObjects_CDS_Hits:
 			vinfo = For_Type_Safety_and_statics.Variant_Information_Storage_Type_Safety(vinfo)
-			variantlist.append(Variant("not needed here",
+			variantlist.append(Variant("nnh",
 							  vinfo.ChrPosition,
 							  vinfo.ID,
 							  -1,
@@ -1119,8 +1120,8 @@ class Transcript:
 					continue
 			elif self.ForwardDirection == TranscriptEnum.REVERSE:
 				if self.SearchPositionInCDSReverse(vinfo.ChrPosition) == TranscriptEnum.POSITION_NOT_IN_CDS:
-					continue
-			variant = Variant("not needed here",
+					continue #nnh == not needed here
+			variant = Variant("nnh",
 							  vinfo.ChrPosition,
 							  vinfo.ID,
 							  -1,
@@ -1697,20 +1698,39 @@ class Transcript:
 			LogOrganizer.addToLog(LogEnums.TRANSCRIPT_BUGHUNTING_LOG,
 								  "checkLastVariants\t" + str(self.TID) + "\tIV_Changed_DNA_CDS_Seq\n")
 			pass
+		further = 1
+		if len(self.IntegratedVariantObjects_CDS_Hits) > 0:
+			if len(self.IntegratedVariantObjects_CDS_Hits[len(self.IntegratedVariantObjects_CDS_Hits)-1].Ref) > 1:
+				# 1 minimum + complete dellength -1 because of string ---> length
+				further = len(self.IntegratedVariantObjects_CDS_Hits[len(self.IntegratedVariantObjects_CDS_Hits)-1].Ref)
+
+
 		if self.ForwardDirection == TranscriptEnum.FORWARD:
 			#firstCDS = self.ListofCDS[0]  # stop in here for reverse transcripts
 			#lastCDS = self.ListofCDS[len(self.ListofCDS) - 1]  # start in here for reverse transcripts
 			oldLastCDSPosition = self.LastCDSPosition
-			self.change_Last_CDS_Position(erg)
-			seqToAdd = genomehandler.seq(self.Chr, oldLastCDSPosition+1, self.LastCDSPosition)
+			self.change_Last_CDS_Position(further)
+			try:
+				seqToAdd = genomehandler.seq(self.Chr, oldLastCDSPosition+1, self.LastCDSPosition)
+			except SequenceHandlingError as she:
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_ADDITIONAL_INFO_LOG, str(self.TID) + "\t" + str(she.description))
+				if she.sequence_part == "":
+					print("Warning: Out of contig/chrom in " + str(self.TID))
+				seqToAdd = she.sequence_part
 			self.Complete_CDS += seqToAdd
 			self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(seqToAdd)
 			self.IV_Changed_DNA_CDS_Seq += seqToAdd
 			self.IV_Check_For_New_Variants(genetic_code, stopcodon)
 		elif self.ForwardDirection == TranscriptEnum.REVERSE:
 			oldLastCDSPosition = self.LastCDSPosition
-			self.change_Last_CDS_Position(erg)
-			seqToAdd = genomehandler.seq(self.Chr, self.LastCDSPosition, oldLastCDSPosition-1)
+			self.change_Last_CDS_Position(further)
+			try:
+				seqToAdd = genomehandler.seq(self.Chr, self.LastCDSPosition, oldLastCDSPosition-1)
+			except SequenceHandlingError as she:
+				LogOrganizer.addToLog(LogEnums.TRANSCRIPT_ADDITIONAL_INFO_LOG, str(self.TID) + "\t" + str(she.description))
+				if she.sequence_part == "":
+					print("Warning: Out of contig/chrom in " + str(self.TID))
+				seqToAdd = she.sequence_part
 			self.Complete_CDS = seqToAdd + self.Complete_CDS
 			self.Rev_CDS += For_Type_Safety_and_statics.BioReverseSeq(seqToAdd)
 			self.IV_Changed_DNA_CDS_Seq += For_Type_Safety_and_statics.BioReverseSeq(seqToAdd)
