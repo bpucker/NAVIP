@@ -29,37 +29,25 @@ if __name__ == '__main__':
                 and "--outpath" in args:
             print("Start: VCF preprocessing")
             if not overwriting:
-                try:
-                    file = open(args[args.index("--outpath") + 1] + "first.vcf", "r")
-                    file.close()
-                    sys.exit(args[args.index("--outpath") + 1] + "first.vcf is already existing.")
-                except:
-                    pass
-                try:
-                    file = open(args[args.index("--outpath") + 1] + "second.vcf", "r")
-                    file.close()
-                    sys.exit(args[args.index("--outpath") + 1] + "second.vcf is already existing.")
-                except:
-                    pass
+                if os.path.exists(args[args.index("--outpath") + 1]) and os.path.isdir(args[args.index("--outpath") + 1]):
+                    if os.path.exists(args[args.index("--outpath") + 1] + "first.vcf") and not overwriting:
+                        sys.exit(args[args.index("--outpath") + 1] + "first.vcf is already existing and overwriting is deactivated.")
+                    if os.path.exists(args[args.index("--outpath") + 1] + "second.vcf") and not overwriting:
+                        sys.exit(args[args.index("--outpath") + 1] + "second.vcf is already existing and overwriting is deactivated.")
+                else:
+                    os.mkdir(args[args.index("--outpath") + 1])
+            if not os.path.exists(args[args.index("--invcf")+1]):
+                sys.exit(args[args.index("--invcf")+1] +" does not exist.")
+            if not os.access(args[args.index("--invcf") + 1], os.R_OK):
+                sys.exit(args[args.index("--invcf")+1] +" is not readable.")
             try:
-                file = open(args[args.index("--invcf")+1],'r')
-                file.close()
-                try:
-                    file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "r")
-                except FileNotFoundError:
-                    file = open(args[args.index("--outpath")+1] + "try-file-for-exceptions", "w")
-                    file.write("test")
-                    file.close()
-                    os.remove(args[args.index("--outpath")+1] + "try-file-for-exceptions")
-            except FileNotFoundError:
-                e = sys.exc_info()[0]
-                sys.exit(e)
-            except PermissionError:
-                e = sys.exc_info()[0]
-                sys.exit(e)
-            except :
-                e = sys.exc_info()[0]
-                sys.exit(e)
+                testfile = open(args[args.index("--outpath") + 1] + "first.vcf", 'a')
+                if not testfile.writable():
+                    testfile.close()
+                    sys.exit(args[args.index("--outpath") + 1] + "first.vcf is not writable.")
+                testfile.close()
+            except Exception as e:
+                sys.exit("Something went wrong with "+ args[args.index("--outpath") + 1] + "first.vcf: " + str(e))
 
             VCF_preprocess.vcf_preprocessing(args[args.index("--invcf") + 1],
                                                args[args.index("--outpath") + 1])
@@ -72,25 +60,14 @@ if __name__ == '__main__':
                 and "--outpath" in args:
             print("Start: NAVIP")
             if not overwriting:
-                try:
-                    file = open(args[args.index("--outpath") + 1] + "all_transcripts_data.fa", "r")
-                    file.close()
-                    sys.exit(args[args.index("--outpath") + 1] + "all_transcripts_data.fa is already existing.")
+                if os.path.exists(args[args.index("--outpath") + 1]) and os.path.isdir(args[args.index("--outpath") + 1]):
+                    if os.path.exists(args[args.index("--outpath") + 1] + "all_transcripts_data.fa") and not overwriting:
+                        sys.exit(args[args.index("--outpath") + 1] + "all_transcripts_data.fa is already existing and overwriting is deactivated.")
+                    if os.path.exists(args[args.index("--outpath") + 1] + "All_VCF.vcf") and not overwriting:
+                        sys.exit(args[args.index("--outpath") + 1] + "All_VCF.vcf is already existing and overwriting is deactivated.")
+                else:
+                    os.mkdir(args[args.index("--outpath") + 1])
 
-                except:
-                    pass
-                try:
-                    file = open(args[args.index("--outpath") + 1] + "all_transcripts_data_damaged.txt", "r")
-                    file.close()
-                    sys.exit(args[args.index("--outpath") + 1] + "all_transcripts_data_damaged.txt is already existing.")
-                except:
-                    pass
-                try:
-                    file = open(args[args.index("--outpath") + 1] + "All_VCF.vcf", "r")
-                    file.close()
-                    sys.exit(args[args.index("--outpath") + 1] + "All_VCF.vcf is already existing.")
-                except:
-                    pass
             try:
                 file = open(args[args.index("--invcf")+1],'r')
                 file.close()
@@ -98,8 +75,10 @@ if __name__ == '__main__':
                 file.close()
                 file = open(args[args.index("--infasta") + 1], 'r')
                 file.close()
-                file = open(args[args.index("--outpath")+1] + "try-file-for-exceptions", "w")
-                file.write("test")
+                file = open(args[args.index("--outpath")+1] + "try-file-for-exceptions", "a")
+                if not file.writable():
+                    file.close()
+                    sys.exit("Permission error in: " + args[args.index("--outpath")+1])
                 file.close()
                 os.remove(args[args.index("--outpath")+1] + "try-file-for-exceptions")
             except FileNotFoundError:
@@ -117,30 +96,32 @@ if __name__ == '__main__':
                                                args[args.index("--infasta") + 1],
                                                args[args.index("--outpath") + 1])
 
-
         elif args[args.index("--mode")+1] == "sfa" \
                 and "--innavipvcf" in args\
                 and "--outpath" in args:
             print("Start: simple first analysis")
-            try:
-                file = open(args[args.index("--innavipvcf")+1],'r')
-                file.close()
-                try:
-                    file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "r")
-                except FileNotFoundError:
-                    file = open(args[args.index("--outpath")+1] + "try-file-for-exceptions", "w")
-                    file.write("test")
+
+            if os.path.exists(args[args.index("--outpath")+1]) and os.path.isdir(args[args.index("--outpath")+1]):
+                if not os.path.exists(args[args.index("--innavipvcf")+1]):
+                    sys.exit(args[args.index("--innavipvcf")+1] + " does not exist.")
+                elif not os.access(args[args.index("--innavipvcf")+1],os.R_OK):
+                    sys.exit(args[args.index("--innavipvcf") + 1] + " is not readable.")
+            else:
+                os.mkdir(args[args.index("--outpath")+1])
+
+            if os.path.exists(args[args.index("--outpath") + 1] + "try-file-for-exceptions"):
+                file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
+                if not file.writable():
                     file.close()
-                    os.remove(args[args.index("--outpath")+1] + "try-file-for-exceptions")
-            except FileNotFoundError:
-                e = sys.exc_info()[0]
-                sys.exit(e)
-            except PermissionError:
-                e = sys.exc_info()[0]
-                sys.exit(e)
-            except :
-                e = sys.exc_info()[0]
-                sys.exit(e)
+                    sys.exit(args[args.index("--outpath") + 1] + " is not writable.")
+                file.close()
+            else:
+                file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
+                if not file.writable():
+                    file.close()
+                    sys.exit(args[args.index("--outpath") + 1] + " is not writable.")
+                file.close()
+
             every_cindel_compensation = True
             if "--ecc" in args:
                 every_cindel_compensation: False
@@ -196,11 +177,6 @@ if __name__ == '__main__':
                         every_cindel_compensation,
                         args[args.index("--outpath") + 1],
                            picture_formats)
-        elif args[args.index("--mode")+1] == "vcfc" \
-                and "--invcf" in args\
-                and "--outpath" in args:
-            VCF_Format_Check.VCF_Check(str(args[args.index("--invcf") + 1]),str(args[args.index("--outpath") + 1]))
-
         else:
             print("Arguments are invalid."
                   "\nPlease look into the Readme or the wiki for more information.")
