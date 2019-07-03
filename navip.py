@@ -35,7 +35,7 @@ if __name__ == '__main__':
                     if os.path.exists(args[args.index("--outpath") + 1] + "second.vcf") and not overwriting:
                         sys.exit(args[args.index("--outpath") + 1] + "second.vcf is already existing and overwriting is deactivated.")
                 else:
-                    os.mkdir(args[args.index("--outpath") + 1])
+                    os.mkdirs(args[args.index("--outpath") + 1], exist_ok= True)
             if not os.path.exists(args[args.index("--invcf")+1]):
                 sys.exit(args[args.index("--invcf")+1] +" does not exist.")
             if not os.access(args[args.index("--invcf") + 1], os.R_OK):
@@ -66,7 +66,7 @@ if __name__ == '__main__':
                     if os.path.exists(args[args.index("--outpath") + 1] + "All_VCF.vcf") and not overwriting:
                         sys.exit(args[args.index("--outpath") + 1] + "All_VCF.vcf is already existing and overwriting is deactivated.")
                 else:
-                    os.mkdir(args[args.index("--outpath") + 1])
+                    os.mkdirs(args[args.index("--outpath") + 1],exist_ok= True)
 
             try:
                 file = open(args[args.index("--invcf")+1],'r')
@@ -107,7 +107,7 @@ if __name__ == '__main__':
                 elif not os.access(args[args.index("--innavipvcf")+1],os.R_OK):
                     sys.exit(args[args.index("--innavipvcf") + 1] + " is not readable.")
             else:
-                os.mkdir(args[args.index("--outpath")+1])
+                os.mkdirs(args[args.index("--outpath")+1],exist_ok= True)
 
             if os.path.exists(args[args.index("--outpath") + 1] + "try-file-for-exceptions"):
                 file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
