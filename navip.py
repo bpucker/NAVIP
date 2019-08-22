@@ -35,7 +35,10 @@ if __name__ == '__main__':
                     if os.path.exists(args[args.index("--outpath") + 1] + "second.vcf") and not overwriting:
                         sys.exit(args[args.index("--outpath") + 1] + "second.vcf is already existing and overwriting is deactivated.")
                 else:
-                    os.mkdirs(args[args.index("--outpath") + 1], exist_ok= True)
+                    try:
+                        os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
+                    except FileExistsError:
+                        pass
             if not os.path.exists(args[args.index("--invcf")+1]):
                 sys.exit(args[args.index("--invcf")+1] +" does not exist.")
             if not os.access(args[args.index("--invcf") + 1], os.R_OK):
@@ -66,8 +69,10 @@ if __name__ == '__main__':
                     if os.path.exists(args[args.index("--outpath") + 1] + "All_VCF.vcf") and not overwriting:
                         sys.exit(args[args.index("--outpath") + 1] + "All_VCF.vcf is already existing and overwriting is deactivated.")
                 else:
-                    os.mkdirs(args[args.index("--outpath") + 1],exist_ok= True)
-
+                    try:
+                        os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
+                    except FileExistsError:
+                        pass
             try:
                 file = open(args[args.index("--invcf")+1],'r')
                 file.close()
@@ -107,8 +112,10 @@ if __name__ == '__main__':
                 elif not os.access(args[args.index("--innavipvcf")+1],os.R_OK):
                     sys.exit(args[args.index("--innavipvcf") + 1] + " is not readable.")
             else:
-                os.mkdirs(args[args.index("--outpath")+1],exist_ok= True)
-
+                    try:
+                        os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
+                    except FileExistsError:
+                        pass
             if os.path.exists(args[args.index("--outpath") + 1] + "try-file-for-exceptions"):
                 file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
                 if not file.writable():
@@ -178,8 +185,10 @@ if __name__ == '__main__':
                         args[args.index("--outpath") + 1],
                            picture_formats)
         else:
-            print("Arguments are invalid."
+            print("Arguments are invalid. Mode arguments are invalid."
                   "\nPlease look into the Readme or the wiki for more information.")
+            print(sys.argv)
     else:
-        print("Arguments are invalid."
+        print("Arguments are invalid. No Mode selected."
               "\nPlease look into the Readme or the wiki for more information.")
+        print(sys.argv)
