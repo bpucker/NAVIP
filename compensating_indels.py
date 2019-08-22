@@ -225,18 +225,18 @@ def do_magic_plotting(data:list, outputfolder:str, orig_outputname:str, formats:
 	max_coloumns_so_bars = len(data[0].split("\t"))
 	all_bars = {}
 
-	for i in range(1,max_coloumns_so_bars):
+	for i in range(1,max_coloumns_so_bars+1): # +1 or the last entry will be ignored
 		all_bars[i] = [] #initialization of bars
 
 	x_axsis = []
 	for dataline in data[0:60]:
 		dataline = dataline.split("\t")
 		x_axsis.append(int(dataline[0]))  # bpr
-		for i in range(1, max_coloumns_so_bars):
+		for i in range(1, max_coloumns_so_bars+1):
 			all_bars[i].append(int(dataline[i])) # involved transcripts with cindel_events
 	###create all bars
 	labels = []
-	for i in range(1, max_coloumns_so_bars):
+	for i in range(1, max_coloumns_so_bars+1):# +1 or the last entry will be ignored
 		plt.bar(x_axsis,all_bars[i],edgecolor='white', width=1 )
 		labels.append(str(i+1) + " InDels")
 
