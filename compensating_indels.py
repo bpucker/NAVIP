@@ -1,5 +1,6 @@
 import Transcript
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import rc
 
 def find_all_cindels(vcf_file_link:str, mod_or_not: bool, outputfolder: str, max_bp_range: int):
@@ -217,7 +218,7 @@ def find_all_cindels(vcf_file_link:str, mod_or_not: bool, outputfolder: str, max
 	table_output_file.write(description2 + "".join(new_output))
 	table_output_file.close()
 
-def do_magic_plotting(data:list, outputfolder:str, orig_outputname:str, formats:str):
+def do_magic_plotting(data:list, outputfolder:str, orig_outputname:str, formats:str, max_x_axis_bpr:int):
 	# y-axis in bold
 	rc('font', weight='bold')
 	#'1\t30\t0\t0\t0'
@@ -225,20 +226,23 @@ def do_magic_plotting(data:list, outputfolder:str, orig_outputname:str, formats:
 	max_coloumns_so_bars = len(data[0].split("\t"))
 	all_bars = {}
 
-	for i in range(1,max_coloumns_so_bars+1): # +1 or the last entry will be ignored
+	for i in range(1,max_coloumns_so_bars):
 		all_bars[i] = [] #initialization of bars
 
 	x_axsis = []
 	for dataline in data[0:60]:
 		dataline = dataline.split("\t")
-		x_axsis.append(int(dataline[0]))  # bpr
-		for i in range(1, max_coloumns_so_bars+1):
+		bpr = int(dataline[0])
+		if (bpr > max_x_axis_bpr):
+			break
+		x_axsis.append(bpr)  # bpr
+		for i in range(1, max_coloumns_so_bars):
 			all_bars[i].append(int(dataline[i])) # involved transcripts with cindel_events
 	###create all bars
-	labels = []
-	for i in range(1, max_coloumns_so_bars+1):# +1 or the last entry will be ignored
+	legend = []
+	for i in range(1, max_coloumns_so_bars):
 		plt.bar(x_axsis,all_bars[i],edgecolor='white', width=1 )
-		labels.append(str(i+1) + " InDels")
+		legend.append(str(i+1) + " InDels")
 
 	# for my data a bar would be the entire second, third [...] colomn, not row.
 	#bars1 = [12, 28, 1, 8, 22]
@@ -264,7 +268,7 @@ def do_magic_plotting(data:list, outputfolder:str, orig_outputname:str, formats:
 
 	# Custom X axis
 	#plt.margins(x=0)
-	plt.legend(labels)
+	plt.legend(legend)
 	plt.xticks(x_axsis,x_axsis, fontweight='bold')
 	plt.xscale('linear')
 	plt.xlabel('distance between cInDels')
@@ -281,7 +285,7 @@ def do_magic_plotting(data:list, outputfolder:str, orig_outputname:str, formats:
 			plt.savefig(outputfolder + orig_outputname.split(".")[0] + "." + picture_format.lower())
 	plt.clf()
 
-def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder: str, formats:str):
+def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder: str, formats:str, max_x_axis_bpr: int):
 
 		vcf_file = open(navip_vcf_file_link, 'r')
 		vcf_data = vcf_file.readlines()
@@ -480,7 +484,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 		table_output_file.write(description + "\n".join(normal_output_with_zeros))
 		table_output_file.close()
 
-		do_magic_plotting(normal_output_with_zeros,outputfolder, table_outputname,formats )
+		do_magic_plotting(normal_output_with_zeros,outputfolder, table_outputname,formats, max_x_axis_bpr )
 
 		### write all tids and stuff
 		involved_tid_list_output = []
@@ -553,7 +557,7 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 		table_output_file = open(outputfolder + table_outputname, 'w')
 		table_output_file.write(description + "\n".join(normal_output_with_zeros))
 		table_output_file.close()
-		do_magic_plotting(normal_output_with_zeros, outputfolder, table_outputname,formats)
+		do_magic_plotting(normal_output_with_zeros, outputfolder, table_outputname,formats, max_x_axis_bpr)
 
 		### write all tids and stuff
 		involved_tid_list_unique = []
