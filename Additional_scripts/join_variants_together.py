@@ -25,9 +25,9 @@ def join_variants_together(input_vcf_file:str, output_vcf_file:str):
 			create_new_info = []
 			for info in new_line[7].split(";"):
 				if info.startswith("NAV1="):
-					create_new_info.append(info + ",".join(nav1_list))
+					create_new_info.append(info + "@".join(nav1_list))
 				elif info.startswith("NAV2="):
-					create_new_info.append(info + ",".join(nav2_list))
+					create_new_info.append(info + "@".join(nav2_list))
 				else:
 					create_new_info.append(info)
 			new_line[7] = ";".join(create_new_info)
