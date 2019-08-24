@@ -11,6 +11,9 @@ class nav_infoline_enum(Enum):
 
 
 class easy_parser:
+	"""
+	This class will contain ONE variant. It will create it from one incomming line-string.
+	"""
 
 	def __init__(self, vcf_file_line:str):
 		if vcf_file_line.startswith('#'):
