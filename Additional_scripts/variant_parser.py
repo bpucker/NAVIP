@@ -1,4 +1,4 @@
-from enum import Enum, unique
+from enum import Enum
 
 
 class nav_infoline_enum(Enum):
@@ -13,6 +13,12 @@ class nav_infoline_enum(Enum):
 class easy_parser:
 
 	def __init__(self, vcf_file_line:str):
+		if vcf_file_line.startswith('#'):
+			raise ValueError("No comment lines allowed: " + vcf_file_line)
+		elif  len(vcf_file_line) <= 4:
+			raise ValueError("Line to short: " + vcf_file_line)
+
+
 		##CHROM POS     ID        REF ALT    QUAL FILTER INFO
 		##0		1		2			3 4		5		6		7
 		spvcf_file_line = vcf_file_line.split("\t")
