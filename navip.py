@@ -46,11 +46,10 @@ def do_the_magic_stuff(arguments):
 						sys.exit(args[args.index("--outpath") + 1] + "first.vcf is already existing and overwriting is deactivated.")
 					if os.path.exists(args[args.index("--outpath") + 1] + "second.vcf") and not overwriting:
 						sys.exit(args[args.index("--outpath") + 1] + "second.vcf is already existing and overwriting is deactivated.")
-				else:
-					try:
-						os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
-					except FileExistsError:
-						pass
+			try:
+				os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
+			except FileExistsError:
+				pass
 			if not os.path.exists(args[args.index("--invcf")+1]):
 				sys.exit(args[args.index("--invcf")+1] +" does not exist.")
 			if not os.access(args[args.index("--invcf") + 1], os.R_OK):
@@ -80,11 +79,11 @@ def do_the_magic_stuff(arguments):
 						sys.exit(args[args.index("--outpath") + 1] + "all_transcripts_data.fa is already existing and overwriting is deactivated.")
 					if os.path.exists(args[args.index("--outpath") + 1] + "All_VCF.vcf") and not overwriting:
 						sys.exit(args[args.index("--outpath") + 1] + "All_VCF.vcf is already existing and overwriting is deactivated.")
-				else:
-					try:
-						os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
-					except FileExistsError:
-						pass
+
+			try:
+				os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
+			except FileExistsError:
+				pass
 			try:
 				file = open(args[args.index("--invcf")+1],'r')
 				file.close()
@@ -123,11 +122,11 @@ def do_the_magic_stuff(arguments):
 					sys.exit(args[args.index("--innavipvcf")+1] + " does not exist.")
 				elif not os.access(args[args.index("--innavipvcf")+1],os.R_OK):
 					sys.exit(args[args.index("--innavipvcf") + 1] + " is not readable.")
-			else:
-					try:
-						os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
-					except FileExistsError:
-						pass
+
+			try:
+				os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
+			except FileExistsError:
+				pass
 			if os.path.exists(args[args.index("--outpath") + 1] + "try-file-for-exceptions"):
 				file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
 				if not file.writable():
