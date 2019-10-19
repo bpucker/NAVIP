@@ -4,7 +4,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 import sys
 import os
 from time import sleep
-import VCF_preprocess,Coordinator, VCF_Format_Check
+import VCF_preprocess,Coordinator
 try:
 	import sfa2
 except ModuleNotFoundError:
@@ -14,10 +14,22 @@ except ImportError:
 	print("ImportError")
 	print(str(sys.exc_info()))
 
+def do_the_magic_stuff(arguments):
+	"""
+	This was created, so navip will run properly without beeing the main program.
+	:param arguments: The arguments should be a list like sys.argv. So one argument in each entry. For example
+			something like "--mode pre --invcf " + orig_vcf_file + " --outpath " + pre_output_path + " --ow" should be a
+			list seperated by space (list.split(" ")) to : ["--mode", "pre", "--invcf", str(orig_vcf_file) , "--outpath",
+			 str(pre_output_path), "--ow"].
+			 Don't mess to much with the order of the arguments, the script is searching the mode after "--mode", the
+			 vcf-file after the --invcf ....
+			 If any questions remain please write me an email. I will happyli write an answer and can improve my description
+			 in the wiki.
+	:return: void
+	"""
 
+	sys.argv = arguments
 
-
-if __name__ == '__main__':
 	sleep(2) # time for creating directories. sometimes useful if python is to fast
 	if "--mode" in sys.argv:
 		args = sys.argv
@@ -197,3 +209,7 @@ if __name__ == '__main__':
 		print("Arguments are invalid. No Mode selected."
 			  "\nPlease look into the Readme or the wiki for more information.")
 		print(sys.argv)
+
+
+if __name__ == '__main__':
+	do_the_magic_stuff(sys.argv)
