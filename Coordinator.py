@@ -699,7 +699,7 @@ def navip_main_coordinator(invcf, ingff, infasta, outpath):
 	if len(gff3.GetChromosomeNames()) < 10: print("GFF3: " + str(gff3.GetChromosomeNames()))
 	else: print("GFF3: " + str(len(gff3.GetChromosomeNames())) + " contigs/chromosomes.")
 	if len(vcf.GetChromosomeNames()) < 10: print("VCF: " + str(vcf.GetChromosomeNames()))
-	else: print("GFF3: " + str(len(vcf.GetChromosomeNames())) + " contigs/chromosomes.")
+	else: print("VCF: " + str(len(vcf.GetChromosomeNames())) + " contigs/chromosomes.")
 	if len(ghandler.GetChromosomeNames()) < 10: print("fasta: " + str(ghandler.GetChromosomeNames()))
 	else: print("fasta:" + str(len(ghandler.GetChromosomeNames())) + " contigs/chromosomes.")
 	Shared_Chromosomes = []
