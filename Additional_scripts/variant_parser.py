@@ -59,6 +59,8 @@ class easy_parser:
 			self.C_nav1_container_list.append(nav1_container(nav1string))
 		self.D_nav2_container_list = []
 		for nav2string in self.B2_nav2.split("@"):
+			if nav2string == [] or len(nav2string) == 0:
+				continue
 			self.D_nav2_container_list.append(nav2_container(nav2string))
 
 
