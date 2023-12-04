@@ -243,7 +243,9 @@ def Preprocessing_original_vcf_file(ori_vcf:str,new1_vcf:str, new2_vcf:str, outp
 				print("Warning: Preprocessing_original_vcf_file (logfile)")
 		else:
 			if len(splitline[3]) > 1 and len(splitline[4]) > 1:
-				line = formatMultiallelVariant(splitline)
+				new_entry = splitline[0:5]
+				new_entry.append("\t".join(splitline[5:]))
+				line = formatMultiallelVariant(new_entry)
 			lines1.append(line)
 			lines2.append(line)
 		line = ori_vcf_file.readline()
