@@ -484,7 +484,8 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 		table_output_file.write(description + "\n".join(normal_output_with_zeros))
 		table_output_file.close()
 
-		do_magic_plotting(normal_output_with_zeros,outputfolder, table_outputname,formats, max_x_axis_bpr )
+		if normal_output_with_zeros:
+			do_magic_plotting(normal_output_with_zeros,outputfolder, table_outputname,formats, max_x_axis_bpr )
 
 		### write all tids and stuff
 		involved_tid_list_output = []
@@ -557,7 +558,9 @@ def find_all_cindels_v2(navip_vcf_file_link: str, mod_or_not: bool, outputfolder
 		table_output_file = open(outputfolder + table_outputname, 'w')
 		table_output_file.write(description + "\n".join(normal_output_with_zeros))
 		table_output_file.close()
-		do_magic_plotting(normal_output_with_zeros, outputfolder, table_outputname,formats, max_x_axis_bpr)
+
+		if normal_output_with_zeros:
+			do_magic_plotting(normal_output_with_zeros, outputfolder, table_outputname,formats, max_x_axis_bpr)
 
 		### write all tids and stuff
 		involved_tid_list_unique = []

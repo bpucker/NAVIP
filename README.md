@@ -6,6 +6,7 @@ Variant calling is a process to identify differences between strains, accessions
 Sequence variants can be analyzed to predict their functional effects on encoded proteins based on available structural annotations.
 Many existing tools operate on a variant-by-variant basis, and per-variant functional impact predictions are generally considered accurate.
 However, challenging cases arise where multiple neighboring variants must be considered simultaneously, especially when these variants influence each other's functional impact.
+
 The Neighborhood-Aware Variant Impact Predictor (NAVIP) addresses this problem by considering all variants that may affect a coding sequence (CDS) during the prediction process.
 This comprehensive approach increases the accuracy of predicting functional consequences by considering the broader genomic context surrounding the target variants.
 To use NAVIP, users must provide a Variant Call Format (VCF) file, a genomic FASTA file, and an associated Gene Feature Format (GFF3) file as input.
@@ -14,11 +15,10 @@ The tool is also freely available on our web server at: https://pbb-tools.de/NAV
 # Usage
 
 For the main program, there are no strict dependencies other than Linux, [Python 3](https://www.python.org), and [matplotlib](https://matplotlib.org).
-For most use cases, it is sufficient to download the source code / clone the git repository and
-run the script ***runnavip.sh*** with the required arguments, which will guide the user through the entire NAVIP processing pipeline:
+For most use cases, it is sufficient to download the source code / clone the git repository and run the script ***runnavip.sh*** with the required arguments, which will guide the user through the entire NAVIP processing pipeline:
 
 ```
-Usage: runnavip.sh --i <invcf> --g <ingff> --f <infasta> --o <outpath>
+Usage: runnavip.sh -i <invcf> -g <ingff> -f <infasta> -o <outpath>
 
 where:
    -i | --invcf   Specify the input VCF file

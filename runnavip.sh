@@ -1,7 +1,7 @@
 #!/bin/sh
 
 help="
-  Usage: $(basename "$0") --i <invcf> --g <ingff> --f <infasta> --o <outpath>
+  Usage: $(basename "$0") -i <invcf> -g <ingff> -f <infasta> -o <outpath>
   
   where:
      -i | --invcf   Specify the input VCF file
