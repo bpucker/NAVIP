@@ -10,3 +10,7 @@ navip_clean_vcf.py
 prep_fasta_and_gff.py
 
 
+## Analysis of amino acid substitution predictions done by SnpEff and NAVIP
+aa_sub_check.py
+
+
