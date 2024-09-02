@@ -5,7 +5,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 
 from enum import Enum, unique
 
-class GenomeHandler():
+class Genomehandler():
     """
     This class reads the given fasta file, stores the chromosome data
     and contains a few functions to make the sequences available.
