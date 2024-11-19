@@ -1,8 +1,7 @@
 from Transcript import *
 from VCF_Variant import *
-import math
 
-class snpeff_hgvs_converter():
+class SnpEff_HGVS_Converter:
 
 	def __init__(self):
 		pass
@@ -34,68 +33,31 @@ class snpeff_hgvs_converter():
 	##INFO=<ID=NMD,Number=.,Type=String,Description="Predicted nonsense mediated decay effects for this variant. Format: 'Gene_Name | Gene_ID | Number_of_transcripts_in_gene | Percent_of_transcripts_affected'">
 
 
-	def convert_main(self, transcript:Transcript, vinfo:Variant_Information_Storage) -> str :
+	@staticmethod
+	def convert_main(transcript:Transcript, vinfo:Variant_Information_Storage) -> str :
 
 		#note to myself: don't forget: info-files are ;-seperated
-		aminodict = {}
-		aminodict["Ala"] = "A"
-		aminodict["A"] = "Ala"
-		aminodict["Cys"] = "C"
-		aminodict["C"] = "Cys"
-		aminodict["Asp"] = "D"
-		aminodict["D"] = "Asp"
-		aminodict["Glu"] = "E"
-		aminodict["E"] = "Glu"
-		aminodict["Phe"] = "F"
-		aminodict["F"] = "Phe"
-		aminodict["Gly"] = "G"
-		aminodict["G"] = "Gly"
-		aminodict["His"] = "H"
-		aminodict["H"] = "His"
-		aminodict["Ile"] = "I"
-		aminodict["I"] = "Ile"
-		aminodict["Lys"] = "K"
-		aminodict["K"] = "Lys"
-		aminodict["Leu"] = "L"
-		aminodict["L"] = "Leu"
-		aminodict["Met"] = "M"
-		aminodict["M"] = "Met"
-		aminodict["Asn"] = "N"
-		aminodict["N"] = "Asn"
-		aminodict["Pro"] = "P"
-		aminodict["P"] = "Pro"
-		aminodict["Gln"] = "Q"
-		aminodict["Q"] = "Gln"
-		aminodict["Arg"] = "R"
-		aminodict["R"] = "Arg"
-		aminodict["Ser"] = "S"
-		aminodict["S"] = "Ser"
-		aminodict["Thr"] = "T"
-		aminodict["T"] = "Thr"
-		aminodict["Val"] = "V"
-		aminodict["V"] = "Val"
-		aminodict["Trp"] = "W"
-		aminodict["W"] = "Trp"
-		aminodict["Tyr"] = "Y"
-		aminodict["Y"] = "Tyr"
-		aminodict["*"] = "*"
-		aminodict['X'] = 'Xaa'
-		aminodict['Xaa'] = 'X'
+		aminodict = {"Ala": "A", "A": "Ala", "Cys": "C", "C": "Cys", "Asp": "D", "D": "Asp", "Glu": "E", "E": "Glu",
+		             "Phe": "F", "F": "Phe", "Gly": "G", "G": "Gly", "His": "H", "H": "His", "Ile": "I", "I": "Ile",
+		             "Lys": "K", "K": "Lys", "Leu": "L", "L": "Leu", "Met": "M", "M": "Met", "Asn": "N", "N": "Asn",
+		             "Pro": "P", "P": "Pro", "Gln": "Q", "Q": "Gln", "Arg": "R", "R": "Arg", "Ser": "S", "S": "Ser",
+		             "Thr": "T", "T": "Thr", "Val": "V", "V": "Val", "Trp": "W", "W": "Trp", "Tyr": "Y", "Y": "Tyr",
+		             "*": "*", 'X': 'Xaa', 'Xaa': 'X'}
 		#aminodict["*"] = "stop_gained"
 		#aminodict["stop_gained"] = "*"
 
-		Annotation = "" 						#1
-		Annotation_Impact = "" 					#2
-		Gene_Name = transcript.TID.split(".")[0]#3
-		Gene_ID = transcript.TID.split(".")[0] 	#4
-		Feature_Type = "transcript" 			#5
-		Feature_ID = transcript.TID 			#6
-		Transcript_BioType = "protein_coding" 	#7
-		Rank = "" 								#8		# ignored
+		annotation = "" 						#1
+		annotation_impact = "" 					#2
+		gene_name = transcript.TID.split(".")[0]#3
+		gene_ID = transcript.TID.split(".")[0] 	#4
+		feature_type = "transcript" 			#5
+		feature_ID = transcript.TID 			#6
+		transcript_bio_type = "protein_coding" 	#7
+		rank = "" 								#8		# ignored
 		HGVS_C = "" 							#9		# http://varnomen.hgvs.org/recommendations/DNA/
 		HGVS_P = "" 							#10		# http://varnomen.hgvs.org/recommendations/protein/
-		cDNA_pos = "" 							#11.1 	# cDNA_pos != CDS_pos, i'm using the matured positions only
-		cDNA_length = "" 						#11.2 	# cDNA_length != CDS_length, i'm using the matured positions only
+		cDNA_pos = "" 							#11.1 	# cDNA_pos != CDS_pos, I'm using the matured positions only
+		cDNA_length = "" 						#11.2 	# cDNA_length != CDS_length, I'm using the matured positions only
 		CDS_pos = vinfo.Unchanged_CDS_Position 	#12.1	# original in snpeff (?); me original
 		CDS_length = transcript.uChDNA_length 	#12.2	# original in snpeff (?); me original
 		AA_pos = (vinfo.Unchanged_CDS_Position-1)/3	#13.1	# original in snpeff (?); me original
@@ -103,32 +65,31 @@ class snpeff_hgvs_converter():
 		distance = "" 							#14		# ignored
 		errors_warnings = "" 					#15		# maybe ignored
 
-		aa_pos_temp = (vinfo.Unchanged_CDS_Position-1)%3
-		if aa_pos_temp == 0:
-			AA_pos = (vinfo.Unchanged_CDS_Position-1 +3) / 3  # aa = 0 is the first, not zero
-		elif aa_pos_temp == 1:
+		AA_pos_temp = (vinfo.Unchanged_CDS_Position-1)%3
+		if AA_pos_temp == 0:
+			AA_pos = (vinfo.Unchanged_CDS_Position-1 +3) / 3  # AA = 0 is the first, not zero
+		elif AA_pos_temp == 1:
 			AA_pos = (vinfo.Unchanged_CDS_Position-1 +2) / 3
-		elif aa_pos_temp == 2:
+		elif AA_pos_temp == 2:
 			AA_pos = (vinfo.Unchanged_CDS_Position-1 +1) / 3
 		AA_pos = int(AA_pos)
 
-		AA_to_next_stop = -1
-		new_aa_pos = 0
-		aa_pos_temp = (vinfo.Changed_CDS_Position - 1) % 3
-		if aa_pos_temp == 0:
-			new_aa_pos = (vinfo.Changed_CDS_Position - 1) / 3 + 1  # aa = 0 is the first, not zero
-		elif aa_pos_temp == 1:
-			new_aa_pos = (vinfo.Changed_CDS_Position + 1) / 3 + 1
-		elif aa_pos_temp == 2:
-			new_aa_pos = (vinfo.Changed_CDS_Position) / 3 + 1
-		new_aa_pos = int(new_aa_pos)
-		AA_to_next_stop = transcript.IV_ChangedTranslation[new_aa_pos:].find('*')
+		new_AA_pos = 0
+		AA_pos_temp = (vinfo.Changed_CDS_Position - 1) % 3
+		if AA_pos_temp == 0:
+			new_AA_pos = (vinfo.Changed_CDS_Position - 1) / 3 + 1  # AA = 0 is the first, not zero
+		elif AA_pos_temp == 1:
+			new_AA_pos = (vinfo.Changed_CDS_Position + 1) / 3 + 1
+		elif AA_pos_temp == 2:
+			new_AA_pos = vinfo.Changed_CDS_Position / 3 + 1
+		new_AA_pos = int(new_AA_pos)
+		AA_to_next_stop = transcript.IV_ChangedTranslation[new_AA_pos:].find('*')
 
 		for i,x in enumerate(vinfo.Classification):
 			if i < len(vinfo.Classification) -1 :
-				Annotation += x.value + ',' # not efficient, but list isn't large
+				annotation += x.value + ',' # not efficient, but list isn't large
 			else:
-				Annotation += x.value
+				annotation += x.value
 
 		if TranscriptEnum.FRAMESHIFT in vinfo.Classification \
 				or TranscriptEnum.FRAMESHIFT_1 in vinfo.Classification \
@@ -138,19 +99,19 @@ class snpeff_hgvs_converter():
 				or TranscriptEnum.STOP_GAINED in vinfo.Classification \
 				or TranscriptEnum.STOP_LOST in vinfo.Classification \
 				or TranscriptEnum.START_LOST in vinfo.Classification:
-			Annotation_Impact = "HIGH"
+			annotation_impact = "HIGH"
 		elif TranscriptEnum.DELETION in vinfo.Classification \
 				or TranscriptEnum.INSERTION in vinfo.Classification \
 				or TranscriptEnum.AA_CHANGE in vinfo.Classification:
-			Annotation_Impact = "MODERATE"
+			annotation_impact = "MODERATE"
 
 		elif TranscriptEnum.STOP_CHANGED  in vinfo.Classification\
 				or TranscriptEnum.AA_CHANGE not in vinfo.Classification:
-			Annotation_Impact = "LOW"
+			annotation_impact = "LOW"
 		else:
 			print("Impossible case. Error convert_main.")
 
-		#Annotation_Impact = "MODIFIER" # does not exist? upstream/downstream is not noted
+		#annotation_impact = "MODIFIER" # does not exist? upstream/downstream is not noted
 
 
 		#HGVS_C
@@ -200,7 +161,7 @@ class snpeff_hgvs_converter():
 				HGVS_C = "c."
 				if insert == refpart:
 					#Format: “prefix”“position(s)_duplicated”“dup”, e.g. g.123_345dup
-					vinfo.Classification.append(hgvs_dna.DUP)
+					vinfo.Classification.append(HGVS_DNA.DUP)
 					HGVS_C += str(vinfo.Unchanged_CDS_Position - len(insert))
 					if len(insert) == 1:
 						HGVS_C += 'dup' + insert
@@ -230,23 +191,22 @@ class snpeff_hgvs_converter():
 
 		#HGVS_P
 		HGVS_P = "p."
-		newamino = ''
-		oldamino= ''
-		for aa in vinfo.NewAmino:
-			newamino += aminodict[aa.upper()]
-		for aa in vinfo.OrigAmino:
-			oldamino += aminodict[aa.upper()]
+		new_amino = ''
+		old_amino= ''
+		for AA in vinfo.NewAmino:
+			new_amino += aminodict[AA.upper()]
+		for AA in vinfo.OrigAmino:
+			old_amino += aminodict[AA.upper()]
 
 		if TranscriptEnum.STOP_LOST in vinfo.Classification:
 			# Format (C-terminal): “prefix”“Ter_position”“new_amino_acid”“ext”“position_new_termination_site”, e.g. p.Ter110Glnext*17
 			# extension, sub, del, ins
-			# sub first, because its easy
-			ext = ""
+			# sub first, because it's easy
 			if AA_to_next_stop != -1:
 				ext = 'ext*' + str(AA_to_next_stop)
 			else:
 				ext = 'ext*?'
-			HGVS_P += '*' + str(AA_pos) + newamino + ext
+			HGVS_P += '*' + str(AA_pos) + new_amino + ext
 
 			#if TranscriptEnum.SUBSTITUTION in vinfo.Classification:
 			#	HGVS_P += '*' + str(AA_pos) + vinfo.NewAmino + ext
@@ -257,21 +217,21 @@ class snpeff_hgvs_converter():
 		elif TranscriptEnum.STOP_CHANGED in vinfo.Classification and TranscriptEnum.INSERTION in vinfo.Classification and vinfo.NewAmino[0] != '*':
 			# insertion in the stop codon, but still a stop codon exist -> extension, but only if the first AA
 			# is not a stop codon
-			# extensioncheck
+			# extension check
 			if AA_to_next_stop != -1:
 				ext = 'ext*' + str(AA_to_next_stop)
 			else:
 				ext = 'ext*?'
-			HGVS_P += '*' + str(AA_pos) + newamino + ext
+			HGVS_P += '*' + str(AA_pos) + new_amino + ext
 
-		elif TranscriptEnum.SUBSTITUTION in vinfo.Classification or newamino == '*':
+		elif TranscriptEnum.SUBSTITUTION in vinfo.Classification or new_amino == '*':
 			# missense -> AA-Change #LRG_199p1:p.Trp24Cys
 			# nonsense -> stop gained #LRG_199p1:p.Trp24Ter (p.Trp24*)
 			# silent -> AA is not changed #NP_003997.1:p.Cys188=
 			if vinfo.OrigAmino == vinfo.NewAmino: #silent
-				HGVS_P += oldamino + str(AA_pos) + oldamino
+				HGVS_P += old_amino + str(AA_pos) + old_amino
 			else: #missense and nonsense
-				HGVS_P += oldamino + str(AA_pos) + newamino
+				HGVS_P += old_amino + str(AA_pos) + new_amino
 
 		elif TranscriptEnum.FRAMESHIFT_1 in vinfo.Classification \
 			or TranscriptEnum.FRAMESHIFT_2 in vinfo.Classification \
@@ -282,60 +242,60 @@ class snpeff_hgvs_converter():
     		a variant with Arg97 as the first amino acid changed, 
     		shifting the reading frame, replacing it for a Pro and terminating at position Ter23.
 			"""
-			if newamino == '*': # counts as SUB, len == 1
+			if new_amino == '*': # counts as SUB, len == 1
 				"""
 				p.(Tyr4*)
 				the predicted consequence at the protein level of the variant ATGGATGCATACGTCACG.. to 
-				ATGGATGCATA\_GTCACG (c.12delC) is a Tyr to translation termination codon. NOTE: the 
+				ATGGATGCATA_GTCACG (c.12delC) is a Tyr to translation termination codon. NOTE: the 
 				variant is described as a substitution, not as a frame shift (p.Tyr4TerfsTer1)
 				"""
-				HGVS_P += oldamino + str(AA_pos) + '*'
-			#elif '*' in newamino: #no idea what this is, but not always a frameshift
+				HGVS_P += old_amino + str(AA_pos) + '*'
+			#elif '*' in new_amino: #no idea what this is, but not always a frameshift
 			#	pass
 			else:
-				#first changed aa has to be the first aa here
+				#first changed AA has to be the first AA here
 				if vinfo.OrigAmino[0] != vinfo.NewAmino[0]:
 					if vinfo.STOP_CAUSED_IN == -1:
-						HGVS_P += oldamino + str(AA_pos) + newamino + '*' + '?'
+						HGVS_P += old_amino + str(AA_pos) + new_amino + '*' + '?'
 					else:
-						HGVS_P += oldamino + str(AA_pos) + newamino + '*' + str(vinfo.STOP_CAUSED_IN)
+						HGVS_P += old_amino + str(AA_pos) + new_amino + '*' + str(vinfo.STOP_CAUSED_IN)
 				else:
-					#find first changed aa....
-					# test every aa, if they are equal, from the variant_position
+					#find first changed AA....
+					# test every AA, if they are equal, from the variant_position
 					i = 0
 					# python can't do that:
-					#for oldaa,newaa in  transcript.uChAAsequence[AA_pos:], transcript.IV_ChangedTranslation[new_aa_pos:]:
-					#	if oldaa == "":
+					#for old_AA,new_AA in  transcript.uChAAsequence[AA_pos:], transcript.IV_ChangedTranslation[new_AA_pos:]:
+					#	if old_AA == "":
 					#		print("should not happen")
-					#	elif newaa == '*':
-					#		HGVS_P += oldamino + str(AA_pos + i) + '*'
+					#	elif new_AA == '*':
+					#		HGVS_P += old_amino + str(AA_pos + i) + '*'
 					#		break
-					#	elif oldaa == newaa:
+					#	elif old_AA == new_AA:
 					#		i +=1
 					#		continue
 					#	else:
 					#		if vinfo.STOP_CAUSED_IN == -1:
-					#			HGVS_P += oldaa + str(AA_pos + i) + newaa + '*?'
+					#			HGVS_P += old_AA + str(AA_pos + i) + new_AA + '*?'
 					#		else:
-					#			HGVS_P += oldaa + str(AA_pos + i) + newaa + '*' + str(vinfo.STOP_CAUSED_IN - i)
+					#			HGVS_P += old_AA + str(AA_pos + i) + new_AA + '*' + str(vinfo.STOP_CAUSED_IN - i)
 					#		break
-					for j, oldaa in enumerate (transcript.uChAAsequence[AA_pos-1:]):
-						newaa = transcript.IV_ChangedTranslation[new_aa_pos-1 + j]
-						if oldaa == "":
+					for j, old_AA in enumerate (transcript.uChAAsequence[AA_pos-1:]):
+						new_AA = transcript.IV_ChangedTranslation[new_AA_pos-1 + j]
+						if old_AA == "":
 							print("should not happen")
-						elif newaa == '*':
-							HGVS_P += oldamino + str(AA_pos + i) + '*'
+						elif new_AA == '*':
+							HGVS_P += old_amino + str(AA_pos + i) + '*'
 							break
-						elif oldaa == newaa:
+						elif old_AA == new_AA:
 							i +=1
 							continue
 						else:
-							#find better names, here it is to switch single aa-code to 3 letter aa-code
+							#find better names, here it is to switch single AA-code to 3 letter AA-code
 							abc1 = ""
 							abc2 = ""
-							for abcabc in newaa:
+							for abcabc in new_AA:
 								abc1 += aminodict[abcabc.upper()]
-							for abcabc in oldaa:
+							for abcabc in old_AA:
 								abc2 += aminodict[abcabc.upper()]
 
 							if vinfo.STOP_CAUSED_IN == -1:
@@ -347,17 +307,15 @@ class snpeff_hgvs_converter():
 		elif TranscriptEnum.INSERTION in vinfo.Classification:
 			# extension is already checked ->
 			# frameshift, too
-			# first duplicationcheck
+			# first duplication check
 			# second and last is the normal insertion
 
 			if ((len (vinfo.Alt) -1) % 3) != 0:
 				print('how`?') # well, it should not be a frameshift -> multiple of 3
 			else:
 				#dup check
-				insertAA = vinfo.NewAmino
 				if (len(vinfo.Alt) -1) % 3 != 0:
 					print("how2?")
-				refpartAA = ""
 
 				if len(transcript.uChAAsequence) >= len(transcript.IV_OriginalTranslation):
 					if (len(vinfo.Alt) -1) / 3 == len(vinfo.NewAmino):
@@ -415,7 +373,7 @@ class snpeff_hgvs_converter():
 
 						else:
 							# Insertion with interfering with other AA
-							if len(vinfo.NewAmino) == 2:  # one new AA, first AA not changed, because its a dup
+							if len(vinfo.NewAmino) == 2:  # one new AA, first AA not changed, because it's a dup
 								# so it looks like, this can only happen, if vinfo.NewAmino[0] == vinfo.NewAmino[1]
 								"""
 								p.Ala3dup (one amino acid)
@@ -451,7 +409,7 @@ class snpeff_hgvs_converter():
 							"""
 							#if len(vinfo.NewAmino) == 1: # one AA
 							HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + '_' + aminodict[refpartAA[1].upper()] \
-									  + str(AA_pos+1) + 'ins' + newamino
+									  + str(AA_pos+1) + 'ins' + new_amino
 							#else: # multiple AA
 							#	HGVS_P += vinfo.OrigAmino[0] + str(AA_pos) + '_' + refpartAA[AA_pos + 1] \
 							#			  + str(AA_pos + 1) + 'ins' + vinfo.NewAmino
@@ -468,15 +426,15 @@ class snpeff_hgvs_converter():
 								#print(refpartAA)
 								#print(transcript.IV_OriginalTranslation[AA_pos:])
 								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + '_' + aminodict[refpartAA[1].upper()] \
-										  + str(AA_pos + 1) + 'ins' + newamino
+										  + str(AA_pos + 1) + 'ins' + new_amino
 							else:
-								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + newamino
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + new_amino
 				else:
 					# reasons for a variation to be in this else:
-					# insertion in the beginning of the transctript -> insert to long, no complete refAA existent
-					#	-> example: insert 5 AA, but its in the start codon
+					# insertion in the beginning of the transcript -> insert to long, no complete refAA existent
+					#	-> example: insert 5 AA, but it's in the start codon
 					if len(vinfo.NewAmino) >= AA_pos:
-						# no duplication/ refAA possible, because insertion is to big
+						# no duplication/ refAA possible, because insertion is too big
 						"""
 							p.Cys28delinsTrpVal
 							a deletion of amino acid Cys28, replaced with TrpVal
@@ -489,31 +447,31 @@ class snpeff_hgvs_converter():
 								and Gln5 changing MetLysGlyHisGlnGlnCys to MetLysGlyHisAlaGlnGlnCys
 							"""
 							if len(vinfo.NewAmino) > 1:
-								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + newamino[1:]
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + new_amino[1:]
 							else:
 								print("curios effect")
-								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + newamino
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + new_amino
 						else:
 							#insertion with interfering with first origAA
 							if vinfo.OrigAmino[0] == vinfo.NewAmino[0]:
 								#first AA not changed -> insertion after
-								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + newamino
+								HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'ins' + new_amino
 							else:
 								#first AA changed -> SUB or DELINS
 								if len(vinfo.NewAmino) == 1 and vinfo.NewAmino == '*':
 									#SUB
 									#LRG_199p1:p.Trp24Ter (p.Trp24*)
-									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + newamino
+									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + new_amino
 								else:
 									#DELINS
 									"""
 										p.Cys28delinsTrpVal
 										a deletion of amino acid Cys28, replaced with TrpVal
 									"""
-									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + newamino
+									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + new_amino
 
 					else:
-						# stopcodon + stuff at the end of the transcript
+						# stop codon + stuff at the end of the transcript
 						if vinfo.NewAmino == vinfo.OrigAmino:
 						#if vinfo.NewAmino[0] == vinfo.OrigAmino[0] and len (vinfo.NewAmino) == 1 and len(vinfo.OrigAmino) == 1:
 							# silent sub
@@ -522,8 +480,8 @@ class snpeff_hgvs_converter():
 								NP_003997.1:p.Cys188=
 							"""
 							b = ""
-							for aa in vinfo.OrigAmino:
-								b += aminodict[aa.upper()]
+							for AA in vinfo.OrigAmino:
+								b += aminodict[AA.upper()]
 							HGVS_P += b + str(AA_pos)  + b
 						else:
 							"""
@@ -541,24 +499,24 @@ class snpeff_hgvs_converter():
 								if len(vinfo.NewAmino) > 1 and len(vinfo.OrigAmino) > 1:
 									#delins
 									b = ""
-									for aa in vinfo.OrigAmino:
-										b += aminodict[aa.upper()]
-									HGVS_P += b + str(AA_pos +1) + 'delins' + newamino[1:]
+									for AA in vinfo.OrigAmino:
+										b += aminodict[AA.upper()]
+									HGVS_P += b + str(AA_pos +1) + 'delins' + new_amino[1:]
 								elif len(vinfo.OrigAmino) == 1 and len(vinfo.NewAmino) > 1:
 									# here, if the AA 2+ are not identical with the original AA
-									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + newamino
-								else: # orig > 1 and newamino == 1 () impossible?
+									HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + 'delins' + new_amino
+								else: # orig > 1 and new_amino == 1 () impossible?
 									print('Impossible case triggered.')
 							else:
 								b = ""
-								for aa in vinfo.OrigAmino:
-									b += aminodict[aa.upper()]
-								HGVS_P += b + str(AA_pos) + 'delins' + newamino
+								for AA in vinfo.OrigAmino:
+									b += aminodict[AA.upper()]
+								HGVS_P += b + str(AA_pos) + 'delins' + new_amino
 		elif TranscriptEnum.DELETION in vinfo.Classification:
-			# deletionstuff, no frameshifts possible anymore -> codon-position should always be 2 ???? nope
+			# deletion stuff, no frameshifts possible anymore -> codon-position should always be 2 ???? nope
 			# len(vinfo.NewAmino) > 1: true
 			if vinfo.OrigRaster == 2:
-				#deletion of complete AA, without interfering of another AA (startposition +1 (dna))
+				#deletion of complete AA, without interfering of another AA (start position +1 (dna))
 				if len(vinfo.OrigAmino) == 2:
 					#complete deletion of the second AA
 					"""
@@ -568,17 +526,17 @@ class snpeff_hgvs_converter():
 					"""
 					HGVS_P += aminodict[vinfo.OrigAmino[1].upper()] + str(AA_pos +1 ) + 'del'
 				elif len(vinfo.OrigAmino) == 1:
-					#impossible case (or somethi8ng went wrong with the transcript)
+					#impossible case (or something went wrong with the transcript)
 					if vinfo.OrigAmino == vinfo.NewAmino:
 						#sub
 						#NP_003997.1:p.Cys188=
-						HGVS_P += oldamino + str(AA_pos) + oldamino
+						HGVS_P += old_amino + str(AA_pos) + old_amino
 					else:
 						try:
-							HGVS_P += oldamino + str(AA_pos) + aminodict[vinfo.NewAmino[0].upper(9)]
+							HGVS_P += old_amino + str(AA_pos) + aminodict[vinfo.NewAmino[0].upper(9)]
 						except IndexError:
 							print("Variant error: " + str(vinfo.ChrPosition))
-							HGVS_P += 'oldamino' + str(AA_pos) + 'Xaa'
+							HGVS_P += 'old_amino' + str(AA_pos) + 'Xaa'
 				else:
 					"""
 						a few AA
@@ -596,9 +554,9 @@ class snpeff_hgvs_converter():
 					if vinfo.OrigAmino == vinfo.NewAmino:
 						#sub
 						#NP_003997.1:p.Cys188=
-						HGVS_P += oldamino + str(AA_pos) + oldamino
+						HGVS_P += old_amino + str(AA_pos) + old_amino
 					else:
-						HGVS_P += oldamino + str(AA_pos) + aminodict[vinfo.NewAmino.upper()]
+						HGVS_P += old_amino + str(AA_pos) + aminodict[vinfo.NewAmino.upper()]
 				elif TranscriptEnum.STOP_GAINED in vinfo.Classification:
 					"""
 						p.Trp26Ter (p.Trp26*)
@@ -617,20 +575,20 @@ class snpeff_hgvs_converter():
 					"""
 					HGVS_P += aminodict[vinfo.OrigAmino[0].upper()] + str(AA_pos) + "_" + aminodict[vinfo.OrigAmino[len(vinfo.OrigAmino)-1].upper()] + str(AA_pos + len(vinfo.OrigAmino)) + 'delins'
 		elif TranscriptEnum.UNKNOWN_AMINOACID in vinfo.Classification :
-			# this here should be an substitution of X into X (because bad chromosome data)
-			HGVS_P += oldamino + str(AA_pos) + newamino
+			# this here should be a substitution of X into X (because bad chromosome data)
+			HGVS_P += old_amino + str(AA_pos) + new_amino
 		else:
 			LogOrganizer.addToLog(LogEnums.CONVERTER_LOG,"No Classification in: " + str(transcript.TID) + "\t" + str(vinfo.ChrPosition))
 
 		snpeff_like_info_string = 'NAV2=' + vinfo.Alt + '|' \
-								  + Annotation + "|" \
-								  + Annotation_Impact + "|" \
-								  + Gene_Name + "|" \
-								  + Gene_ID + "|" \
-								  + Feature_Type + "|" \
-								  + Feature_ID + "|" \
-								  + Transcript_BioType + "|" \
-								  + Rank + "|" \
+								  + annotation + "|" \
+								  + annotation_impact + "|" \
+								  + gene_name + "|" \
+								  + gene_ID + "|" \
+								  + feature_type + "|" \
+								  + feature_ID + "|" \
+								  + transcript_bio_type + "|" \
+								  + rank + "|" \
 								  + HGVS_C + "|" \
 								  + HGVS_P + "|" \
 								  + str(cDNA_pos) + "/" \
@@ -645,7 +603,7 @@ class snpeff_hgvs_converter():
 
 
 @unique
-class hgvs_dna(Enum):
+class HGVS_DNA(Enum):
 	SUB = "Substitution"
 	DEL = "Deletion"
 	DUP = "Duplication"
@@ -658,7 +616,7 @@ class hgvs_dna(Enum):
 	COM = "Complex"
 
 @unique
-class hgvs_prot(Enum):
+class HGVS_Prot(Enum):
 	SUB = "Substitution"
 	DEL = "Deletion"
 	DUP = "Duplication"

@@ -4,7 +4,7 @@ __email__   = "janbaas@cebitec.uni-bielefeld.de"
 import sys
 import os
 from time import sleep
-import VCF_preprocess,Coordinator
+import VCF_preprocess, Coordinator
 try:
 	import sfa2
 except ModuleNotFoundError:
@@ -14,23 +14,23 @@ except ImportError:
 	print("ImportError")
 	print(str(sys.exc_info()))
 
-def do_the_magic_stuff(arguments):
+def main(arguments):
 	"""
-	This was created, so navip will run properly without beeing the main program.
+	This was created, so navip will run properly without being the main program.
 	:param arguments: The arguments should be a list like sys.argv. So one argument in each entry. For example
 			something like "--mode pre --invcf " + orig_vcf_file + " --outpath " + pre_output_path + " --ow" should be a
 			list seperated by space (list.split(" ")) to : ["--mode", "pre", "--invcf", str(orig_vcf_file) , "--outpath",
 			 str(pre_output_path), "--ow"].
-			 Don't mess to much with the order of the arguments, the script is searching the mode after "--mode", the
+			 Don't mess too much with the order of the arguments, the script is searching the mode after "--mode", the
 			 vcf-file after the --invcf ....
-			 If any questions remain please write me an email. I will happyli write an answer and can improve my description
+			 If any questions remain please write me an email. I will happily write an answer and can improve my description
 			 in the wiki.
 	:return: void
 	"""
 
 	sys.argv = arguments
 
-	sleep(2) # time for creating directories. sometimes useful if python is to fast
+	sleep(2) # time for creating directories. sometimes useful if python is too fast
 	if "--mode" in sys.argv:
 		args = sys.argv
 		overwriting = False
@@ -103,7 +103,7 @@ def do_the_magic_stuff(arguments):
 			except PermissionError:
 				e = sys.exc_info()[0]
 				sys.exit(e)
-			except :
+			except Exception:
 				e = sys.exc_info()[0]
 				sys.exit(e)
 
@@ -127,18 +127,12 @@ def do_the_magic_stuff(arguments):
 				os.makedirs(args[args.index("--outpath") + 1], exist_ok= True)
 			except FileExistsError:
 				pass
-			if os.path.exists(args[args.index("--outpath") + 1] + "try-file-for-exceptions"):
-				file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
-				if not file.writable():
-					file.close()
-					sys.exit(args[args.index("--outpath") + 1] + " is not writable.")
+
+			file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
+			if not file.writable():
 				file.close()
-			else:
-				file = open(args[args.index("--outpath") + 1] + "try-file-for-exceptions", "a")
-				if not file.writable():
-					file.close()
-					sys.exit(args[args.index("--outpath") + 1] + " is not writable.")
-				file.close()
+				sys.exit(args[args.index("--outpath") + 1] + " is not writable.")
+			file.close()
 
 			every_cindel_compensation = True
 			if "--ecc" in args:
@@ -153,7 +147,6 @@ def do_the_magic_stuff(arguments):
 
 
 			if not overwriting:
-				mode_name = ""
 				if every_cindel_compensation:
 					mode_name = "cInDels"
 				else:
@@ -161,40 +154,40 @@ def do_the_magic_stuff(arguments):
 
 				all_the_output_file_names = []
 
-				table_outputname1 = "transcripts_isoform_" + mode_name + '.txt'
-				table_outputname2 = "transcripts_isoform_" + mode_name + '_TIDs' + '.txt'
-				table_outputname3 = "transcripts_unique_" + mode_name + '.txt'
-				table_outputname4 = "transcripts_unique_" + mode_name + '_TIDs' + '.txt'
-				table_outputname5 = "transcripts_unique_" + mode_name + '_TIDs_detailed' + '.txt'
-				table_outputname6 = "transcripts_unique_" + mode_name + '_TIDs_detailed_sorted_by_TID' + '.txt'
+				table_output_name1 = "transcripts_isoform_" + mode_name + '.txt'
+				table_output_name2 = "transcripts_isoform_" + mode_name + '_TIDs' + '.txt'
+				table_output_name3 = "transcripts_unique_" + mode_name + '.txt'
+				table_output_name4 = "transcripts_unique_" + mode_name + '_TIDs' + '.txt'
+				table_output_name5 = "transcripts_unique_" + mode_name + '_TIDs_detailed' + '.txt'
+				table_output_name6 = "transcripts_unique_" + mode_name + '_TIDs_detailed_sorted_by_TID' + '.txt'
 
-				all_the_output_file_names.append(table_outputname1)
-				all_the_output_file_names.append(table_outputname2)
-				all_the_output_file_names.append(table_outputname3)
-				all_the_output_file_names.append(table_outputname4)
-				all_the_output_file_names.append(table_outputname5)
-				all_the_output_file_names.append(table_outputname6)
+				all_the_output_file_names.append(table_output_name1)
+				all_the_output_file_names.append(table_output_name2)
+				all_the_output_file_names.append(table_output_name3)
+				all_the_output_file_names.append(table_output_name4)
+				all_the_output_file_names.append(table_output_name5)
+				all_the_output_file_names.append(table_output_name6)
 
-				outputfolder = args[args.index("--outpath") + 1]
+				output_folder = args[args.index("--outpath") + 1]
 
 				probably_supported_formats = ["png", "pdf", "ps", "eps", "svg"]
-				for orig_outputname in [table_outputname1,table_outputname3]:
+				for orig_output_name in [table_output_name1,table_output_name3]:
 					for picture_format in picture_formats.split(','):
 						if picture_format.lower() in probably_supported_formats:
 							try:
-								open(outputfolder + orig_outputname.split(".")[0] + "." + picture_format.lower(), 'r')
-								sys.exit("File is existing and overwriting is not active:" + outputfolder + orig_outputname.split(".")[0] + "." + picture_format.lower())
+								open(output_folder + orig_output_name.split(".")[0] + "." + picture_format.lower(), 'r')
+								sys.exit("File is existing and overwriting is not active:" + output_folder + orig_output_name.split(".")[0] + "." + picture_format.lower())
 							except FileNotFoundError:
 								continue
 				for file_name in all_the_output_file_names:
 					try:
-						open(outputfolder + file_name, 'r')
-						sys.exit("File is existing and overwriting is not active:" + outputfolder + file_name)
+						open(output_folder + file_name, 'r')
+						sys.exit("File is existing and overwriting is not active:" + output_folder + file_name)
 					except FileNotFoundError:
 						continue
 
 			#doku for all files, new names, too (better files, too)
-			# vcf_file_link:str, mod_or_not: bool, outputfolder: str, max_bp_range: int
+			# vcf_file_link:str, mod_or_not: bool, output_folder: str, max_bp_range: int
 			sfa2.sfa2_main(args[args.index("--innavipvcf") + 1],
 						every_cindel_compensation,
 						args[args.index("--outpath") + 1],
@@ -211,4 +204,4 @@ def do_the_magic_stuff(arguments):
 
 
 if __name__ == '__main__':
-	do_the_magic_stuff(sys.argv)
+	main(sys.argv)
