@@ -12,6 +12,8 @@ This comprehensive approach increases the accuracy of predicting functional cons
 To use NAVIP, users must provide a Variant Call Format (VCF) file, a genomic FASTA file, and an associated Gene Feature Format (GFF3) file as input.
 The tool is also freely available on our web server at: https://pbb-tools.de/NAVIP.
 
+Important advice: Please only provide single nucleotide variants (SNVs) and insertions/deletions (InDels). Multiple nucleotide variants (MNVs) are currently not supported.
+
 # Usage
 
 For the main program, there are no strict dependencies other than Linux, [Python 3](https://www.python.org), and [matplotlib](https://matplotlib.org).
