@@ -35,4 +35,4 @@ For additional options and instructions on how to run individual modules of NAVI
 
 # Reference (how to cite):
 
-Baasner, J.-S., Rempel, A., Howard, D., Pucker, B. (2024). NAVIP: Unraveling the Influence of Neighboring Small Sequence Variants on Functional Impact Prediction. bioRxiv. [doi:10.1101/596718](https://doi.org/10.1101/596718)
+Baasner, J.-S., Rempel, A., Howard, D., Pucker, B. (2024). NAVIP: Unraveling the Influence of Neighboring Small Sequence Variants on Functional Impact Prediction. PLoS Comput Biol 21(2): e1012732. doi: [10.1371/journal.pcbi.1012732](https://doi.org/10.1371/journal.pcbi.1012732).
