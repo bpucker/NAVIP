@@ -45,7 +45,7 @@ class GFF3_Handler:
 
 
 			for att in atts:
-				if 'ID=' in att:
+				if att.startswith( 'ID=' ):
 					gff3_id = att[3:].replace("\n","")
 				elif 'Parent=' in att:
 					parent = att[7:].replace("\n","")
@@ -108,7 +108,7 @@ class GFF3_Handler:
 					atts = spline_child[8].split(';')
 					TID = ""
 					for att in atts:
-						if 'ID=' in att:
+						if att.startswith( 'ID=' ):
 							TID = att[3:]
 							break
 					if TID == "":
